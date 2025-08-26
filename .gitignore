@@ -1,0 +1,29 @@
+# OS / IDE 관련
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Node & Vite 공통
+node_modules/
+dist/
+coverage/
+
+# Java / Spring 공통
+.gradle/
+build/
+out/
+bin/
+
+# Logs
+*.log
+*.log.*
+
+# Environment files (frontend/backend 각각 내부에서 관리하는 경우도 있음)
+.env
+.env.local
+.env.*.local
+
+# Misc
+*.swp
+*.swo
