@@ -1,6 +1,6 @@
 :root {
-  --primary-color: #535bf2;
-  --primary-hover: #3b45c5;
+  --primary-color: #cc0000;
+  --primary-hover: #990000;
   --bg-color: #fff;
   --text-color: #333;
 }
@@ -52,7 +52,7 @@
 
 .input-group input:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 4px rgba(83, 91, 242, 0.3);
+  box-shadow: 0 0 4px rgba(230, 0, 0, 0.3);
   outline: none;
 }
 
@@ -70,4 +70,22 @@
 
 .login-button:hover {
   background-color: var(--primary-hover);
+}
+
+.signup-text {
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: #555;
+  text-align: center;
+}
+
+.signup-link {
+  color: var(--primary-color);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.signup-link:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
 }
