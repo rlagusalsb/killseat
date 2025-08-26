@@ -4,7 +4,13 @@ import "../css/Header.css";
 export default function Header() {
   return (
     <header className="header">
-      <h1 className="logo">Killseat</h1>
+      <Link to="/" className="logo">
+        <img
+          src="/killseatlogo.png"
+          alt="Killseat Logo"
+          className="logo-img"
+        />
+      </Link>
       <nav className="nav">
         <Link to="/">홈</Link>
         <Link to="/reservation">예약</Link>
