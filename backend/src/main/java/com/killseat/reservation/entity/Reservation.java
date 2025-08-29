@@ -2,7 +2,7 @@ package com.killseat.reservation.entity;
 
 import com.killseat.member.entity.Member;
 import com.killseat.payment.entity.Payment;
-import com.killseat.seat.entity.Seat;
+import com.killseat.showseat.entity.ShowSeat;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -12,9 +12,14 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "reservation")
+@Table(name = "reservation",
+        uniqueConstraints = {
+            @UniqueConstraint(columnNames = {"show_seat_id"})
+        })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Reservation {
@@ -28,15 +33,15 @@ public class Reservation {
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seat_id", nullable = false)
-    private Seat seat;
+    @JoinColumn(name = "show_seat_id", nullable = false)
+    private ShowSeat showSeat;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private ReservationStatus status;
+    private ReservationStatus status = ReservationStatus.PENDING;
 
-    @OneToOne(mappedBy = "reservation", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Payment payment;
+    @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Payment> payments = new ArrayList<>();
 
     @CreationTimestamp
     private LocalDateTime createdAt;
@@ -45,14 +50,14 @@ public class Reservation {
     private LocalDateTime updatedAt;
 
     @Builder
-    private Reservation(Member member, Seat seat, ReservationStatus status) {
+    private Reservation(Member member, ShowSeat showSeat, ReservationStatus status) {
         this.member = member;
-        this.seat = seat;
-        this.status = status;
+        this.showSeat = showSeat;
+        this.status = (status != null) ? status : ReservationStatus.PENDING;
     }
 
     public void addPayment(Payment payment) {
-        this.payment = payment;
+        this.payments.add(payment);
         if (payment.getReservation() != this) {
             payment.linkReservation(this);
         }
