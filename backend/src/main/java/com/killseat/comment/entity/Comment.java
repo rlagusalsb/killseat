@@ -52,4 +52,11 @@ public class Comment {
         this.parent = parent;
         this.content = content;
     }
+
+    public void linkPost(Post post) {
+        this.post = post;
+        if (!post.getComments().contains(this)) {
+            post.getComments().add(this);
+        }
+    }
 }
