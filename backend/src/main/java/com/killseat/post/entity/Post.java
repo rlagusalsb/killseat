@@ -52,5 +52,8 @@ public class Post {
 
     public void addComment(Comment comment) {
         comments.add(comment);
+        if (comment.getPost() != this) {
+            comment.linkPost(this);
+        }
     }
 }
