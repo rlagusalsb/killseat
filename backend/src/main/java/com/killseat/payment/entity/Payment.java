@@ -22,12 +22,12 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long paymentId;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reservation_id", unique = true, nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reservation_id", nullable = false)
     private Reservation reservation;
 
     @Column(nullable = false)
-    private BigDecimal amount;
+    private Integer amount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -35,7 +35,7 @@ public class Payment {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private PaymentStatus status;
+    private PaymentStatus status = PaymentStatus.PENDING;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
@@ -44,7 +44,7 @@ public class Payment {
     private LocalDateTime updatedAt;
 
     @Builder
-    private Payment(Reservation reservation, BigDecimal amount, PaymentMethod method, PaymentStatus status) {
+    private Payment(Reservation reservation, Integer amount, PaymentMethod method, PaymentStatus status) {
         this.reservation = reservation;
         this.amount = amount;
         this.method = method;
@@ -53,7 +53,7 @@ public class Payment {
 
     public void linkReservation(Reservation reservation) {
         this.reservation = reservation;
-        if (reservation.getPayment() != this) {
+        if (!reservation.getPayments().contains(this)) {
             reservation.addPayment(this);
         }
     }
