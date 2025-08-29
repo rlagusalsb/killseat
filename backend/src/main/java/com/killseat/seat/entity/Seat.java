@@ -20,22 +20,11 @@ public class Seat {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long seatId;
 
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false, unique = true, length = 10)
     private String seatNumber;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private SeatStatus status;
-
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
-
     @Builder
-    private Seat(String seatNumber, SeatStatus status) {
+    private Seat(String seatNumber) {
         this.seatNumber = seatNumber;
-        this.status = status;
     }
 }
