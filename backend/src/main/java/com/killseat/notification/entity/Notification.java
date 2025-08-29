@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 public class Notification {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long notificationId;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -33,7 +33,7 @@ public class Notification {
     private NotificationType type;
 
     @Column(nullable = false)
-    private boolean isRead;
+    private boolean isRead = false;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
