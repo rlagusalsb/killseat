@@ -1,7 +1,7 @@
-package com.killseat.showseat.entity;
+package com.killseat.performanceseat.entity;
 
 import com.killseat.seat.entity.Seat;
-import com.killseat.show.entity.Show;
+import com.killseat.performance.entity.Performance;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -9,21 +9,21 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "show_seat",
+@Table(name = "performance_seat",
         uniqueConstraints = {
-            @UniqueConstraint(columnNames = {"show_id", "seat_id"})
+            @UniqueConstraint(columnNames = {"performance_id", "seat_id"})
         })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ShowSeat {
+public class PerformanceSeat {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long showSeatId;
+    private Long PerformanceSeatId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "show_id", nullable = false)
-    private Show show;
+    @JoinColumn(name = "performance_id", nullable = false)
+    private Performance performance;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "seat_id", nullable = false)
@@ -31,11 +31,11 @@ public class ShowSeat {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private ShowSeatStatus status = ShowSeatStatus.AVAILABLE;
+    private PerformanceSeatStatus status = PerformanceSeatStatus.AVAILABLE;
 
     @Builder
-    private ShowSeat(Show show, Seat seat, ShowSeatStatus status) {
-        this.show = show;
+    private PerformanceSeat(Performance performance, Seat seat, PerformanceSeatStatus status) {
+        this.performance = performance;
         this.seat = seat;
         this.status = status;
     }

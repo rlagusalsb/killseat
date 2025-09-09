@@ -1,4 +1,4 @@
-package com.killseat.show.entity;
+package com.killseat.performance.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -10,14 +10,14 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "show")
+@Table(name = "performance")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Show {
+public class Performance {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long showId;
+    private Long performanceId;
 
     @Column(nullable = false, length = 100)
     private String title;
@@ -32,7 +32,7 @@ public class Show {
     private LocalDateTime createdAt;
 
     @Builder
-    private Show(String title, LocalDateTime startTime, LocalDateTime endTime) {
+    private Performance(String title, LocalDateTime startTime, LocalDateTime endTime) {
         this.title = title;
         this.startTime = startTime;
         this.endTime = endTime;

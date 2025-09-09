@@ -2,7 +2,7 @@ package com.killseat.reservation.entity;
 
 import com.killseat.member.entity.Member;
 import com.killseat.payment.entity.Payment;
-import com.killseat.showseat.entity.ShowSeat;
+import com.killseat.performanceseat.entity.PerformanceSeat;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -18,7 +18,7 @@ import java.util.List;
 @Entity
 @Table(name = "reservation",
         uniqueConstraints = {
-            @UniqueConstraint(columnNames = {"show_seat_id"})
+            @UniqueConstraint(columnNames = {"performance_seat_id"})
         })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -33,8 +33,8 @@ public class Reservation {
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "show_seat_id", nullable = false)
-    private ShowSeat showSeat;
+    @JoinColumn(name = "performance_seat_id", nullable = false)
+    private PerformanceSeat performanceSeat;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -50,9 +50,9 @@ public class Reservation {
     private LocalDateTime updatedAt;
 
     @Builder
-    private Reservation(Member member, ShowSeat showSeat, ReservationStatus status) {
+    private Reservation(Member member, PerformanceSeat performanceSeat, ReservationStatus status) {
         this.member = member;
-        this.showSeat = showSeat;
+        this.performanceSeat = performanceSeat;
         this.status = (status != null) ? status : ReservationStatus.PENDING;
     }
 
