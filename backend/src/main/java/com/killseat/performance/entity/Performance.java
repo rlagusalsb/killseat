@@ -37,4 +37,10 @@ public class Performance {
         this.startTime = startTime;
         this.endTime = endTime;
     }
+
+    public void update(String title, LocalDateTime startTime, LocalDateTime endTime) {
+        this.title = title;
+        this.startTime = startTime;
+        this.endTime = endTime;
+    }
 }
