@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtUtil {
@@ -28,8 +29,13 @@ public class JwtUtil {
     }
 
     public String generateAccessToken(UserDetails userDetails) {
+        String role = userDetails.getAuthorities().stream()
+                .map(auth -> auth.getAuthority())   // ROLE_USER / ROLE_ADMIN
+                .collect(Collectors.joining(","));
+
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
+                .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + accessTokenMs))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -39,6 +45,7 @@ public class JwtUtil {
     public String generateRefreshToken(UserDetails userDetails) {
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
+                .claim("role", userDetails.getAuthorities().iterator().next().getAuthority())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + refreshTokenMs))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -52,6 +59,15 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+    }
+
+    public String extractRole(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("role", String.class);
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {
