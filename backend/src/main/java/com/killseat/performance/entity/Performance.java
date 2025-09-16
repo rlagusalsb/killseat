@@ -28,19 +28,38 @@ public class Performance {
     @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private PerformanceStatus status = PerformanceStatus.BEFORE_OPEN;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 
     @Builder
-    private Performance(String title, LocalDateTime startTime, LocalDateTime endTime) {
+    private Performance(String title, LocalDateTime startTime, LocalDateTime endTime, PerformanceStatus status) {
         this.title = title;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.status = (status != null) ? status : PerformanceStatus.BEFORE_OPEN;
     }
 
     public void update(String title, LocalDateTime startTime, LocalDateTime endTime) {
         this.title = title;
         this.startTime = startTime;
         this.endTime = endTime;
+    }
+
+    public void openSales() {
+        if (this.status != PerformanceStatus.BEFORE_OPEN) {
+            throw new IllegalStateException("예매는 시작 전 상태에서만 열 수 있습니다.");
+        }
+        this.status = PerformanceStatus.OPEN;
+    }
+
+    public void closeSales() {
+        if (this.status != PerformanceStatus.OPEN) {
+            throw new IllegalStateException("예매 진행 중일 때만 종료할 수 있습니다.");
+        }
+        this.status = PerformanceStatus.CLOSED;
     }
 }

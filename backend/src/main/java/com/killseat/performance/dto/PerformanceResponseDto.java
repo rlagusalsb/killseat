@@ -12,4 +12,5 @@ public class PerformanceResponseDto {
     private String title;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private String status;
 }
