@@ -23,6 +23,7 @@ public class PerformanceSeatMapper {
                 entity.getPerformanceSeatId(),
                 entity.getPerformance().getPerformanceId(),
                 entity.getSeat().getSeatId(),
+                entity.getSeat().getSeatNumber(),
                 entity.getStatus().name()
         );
     }
