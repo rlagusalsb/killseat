@@ -30,7 +30,7 @@ public class JwtUtil {
 
     public String generateAccessToken(UserDetails userDetails) {
         String role = userDetails.getAuthorities().stream()
-                .map(auth -> auth.getAuthority())   // ROLE_USER / ROLE_ADMIN
+                .map(auth -> auth.getAuthority())
                 .collect(Collectors.joining(","));
 
         return Jwts.builder()

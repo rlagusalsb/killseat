@@ -5,10 +5,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "seat")
@@ -25,6 +21,10 @@ public class Seat {
 
     @Builder
     private Seat(String seatNumber) {
+        this.seatNumber = seatNumber;
+    }
+
+    public void updateSeatNumber(String seatNumber) {
         this.seatNumber = seatNumber;
     }
 }

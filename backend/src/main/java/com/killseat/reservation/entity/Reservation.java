@@ -62,4 +62,8 @@ public class Reservation {
             payment.linkReservation(this);
         }
     }
+
+    public void updateStatus(ReservationStatus status) {
+        this.status = status;
+    }
 }

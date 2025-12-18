@@ -2,5 +2,6 @@ package com.killseat.performanceseat.entity;
 
 public enum PerformanceSeatStatus {
     AVAILABLE,
-    RESERVED
+    RESERVED,
+    BLOCKED
 }
