@@ -19,7 +19,7 @@ public class PerformanceSeat {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long PerformanceSeatId;
+    private Long performanceSeatId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "performance_id", nullable = false)
