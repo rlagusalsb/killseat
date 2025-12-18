@@ -13,7 +13,8 @@ public class PerformanceMapper {
                 performance.getPerformanceId(),
                 performance.getTitle(),
                 performance.getStartTime(),
-                performance.getEndTime()
+                performance.getEndTime(),
+                performance.getStatus().name()
         );
     }
 
