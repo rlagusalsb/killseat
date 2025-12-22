@@ -63,7 +63,45 @@ public class Reservation {
         }
     }
 
-    public void updateStatus(ReservationStatus status) {
-        this.status = status;
+    //상태 변경 메서드
+    //결제 성공
+    public void confirm() {
+        if (this.status != ReservationStatus.PENDING) {
+            throw new IllegalStateException("예약을 확정할 수 없는 상태입니다.");
+        }
+        this.status = ReservationStatus.CONFIRMED;
+    }
+
+    //결제 실패
+    public void payFailed() {
+        if (this.status != ReservationStatus.PENDING) {
+            throw new IllegalStateException("결제 실패 처리가 불가능합니다.");
+        }
+    }
+
+    //결제 전 예약 취소
+    public void cancelBeforePayment() {
+        if (this.status == ReservationStatus.CANCELED) {
+            return;
+        }
+
+        if (this.status != ReservationStatus.PENDING) {
+            throw new IllegalStateException("이미 결제가 진행된 예약은 취소할 수 없습니다.");
+        }
+
+        this.status = ReservationStatus.CANCELED;
+    }
+
+    //결제 후 예약 취소
+    public void cancelAfterPayment() {
+        if (this.status == ReservationStatus.CANCELED) {
+            return;
+        }
+
+        if (this.status != ReservationStatus.CONFIRMED) {
+            throw new IllegalStateException("결제 완료 건만 취소 가능합니다.");
+        }
+
+        this.status = ReservationStatus.CANCELED;
     }
 }

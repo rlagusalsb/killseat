@@ -74,7 +74,7 @@ public class ReservationService {
 
         reservation.getPerformanceSeat().cancel();
 
-        reservation.updateStatus(ReservationStatus.CANCELED);
+        reservation.cancelBeforePayment();
 
         return reservationMapper.toDto(reservation);
     }
