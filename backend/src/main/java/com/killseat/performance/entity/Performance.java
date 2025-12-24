@@ -32,6 +32,9 @@ public class Performance {
     @Column(nullable = false, length = 20)
     private PerformanceStatus status = PerformanceStatus.BEFORE_OPEN;
 
+    @Column(name = "thumbnail_url", length = 255)
+    private String thumbnailUrl;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 
