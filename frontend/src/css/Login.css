@@ -1,8 +1,8 @@
 :root {
-  --primary-color: #cc0000;
-  --primary-hover: #990000;
-  --bg-color: #fff;
-  --text-color: #333;
+  --primary-color: #ff3b3b;
+  --primary-hover: #d60000;
+  --bg-color: #fcfcfc;
+  --text-color: #222;
 }
 
 .login-container {
