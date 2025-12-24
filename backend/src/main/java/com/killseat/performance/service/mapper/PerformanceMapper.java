@@ -14,7 +14,8 @@ public class PerformanceMapper {
                 performance.getTitle(),
                 performance.getStartTime(),
                 performance.getEndTime(),
-                performance.getStatus().name()
+                performance.getStatus().name(),
+                performance.getThumbnailUrl()
         );
     }
 
