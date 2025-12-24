@@ -13,8 +13,8 @@ export default function Header() {
       </Link>
       <nav className="nav">
         <Link to="/">홈</Link>
-        <Link to="/reservation">예약</Link>
-        <Link to="/myseats">내 좌석</Link>
+        <Link to="/board">게시판</Link>
+        <Link to="/my-reservations">내 예약</Link>
         <Link to="/login">로그인</Link>
       </nav>
     </header>
