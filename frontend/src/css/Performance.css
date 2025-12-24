@@ -1,0 +1,147 @@
+.home {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: calc(100vh - 70px);
+  background: #fcfcfc;
+  padding-top: 32px;
+}
+
+.page {
+  max-width: 760px;
+  width: 100%;
+  padding: 1.2rem;
+}
+
+.page-header {
+  justify-content: center;
+  text-align: center;
+  margin-bottom: 1.2rem;
+}
+
+.page-title {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #222;
+  margin: 0;
+}
+
+.performance-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.performance-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 22px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+}
+
+.performance-thumbnail {
+  width: 140px;
+  height: 90px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #eee;
+  flex-shrink: 0;
+}
+
+.performance-info {
+  text-align: left;
+  flex: 1;
+  min-width: 0;
+}
+
+.performance-title {
+  margin: 0 0 8px 0;
+  font-size: 1.25rem;
+  color: #222;
+  line-height: 1.2;
+  word-break: keep-all;
+}
+
+.performance-meta {
+  margin: 0 0 8px 0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.performance-status {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.performance-status.open {
+  color: #1a7f37;
+  font-weight: 600;
+}
+
+.performance-status.closed {
+  color: #999;
+  font-weight: 600;
+}
+
+.action-button {
+  padding: 0.8rem 1.6rem;
+  background-color: red;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  white-space: nowrap;
+}
+
+.action-button:hover {
+  background-color: darkred;
+}
+
+.action-button:disabled {
+  background-color: #ddd;
+  color: #777;
+  cursor: not-allowed;
+}
+
+.helper-text {
+  color: #555;
+  font-size: 0.95rem;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.helper-text.error {
+  color: #c40000;
+}
+
+@media (max-width: 640px) {
+  .home {
+    padding-top: 24px;
+  }
+
+  .page-title {
+    font-size: 2.2rem;
+  }
+
+  .performance-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .performance-thumbnail {
+    width: 100%;
+    height: 160px;
+  }
+
+  .action-button {
+    width: 100%;
+  }
+}
