@@ -2,6 +2,7 @@ import "../css/PerformanceSeats.css";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import api from "../api/client";
 
 export default function PerformanceSeats() {
   const { performanceId } = useParams();
@@ -10,6 +11,7 @@ export default function PerformanceSeats() {
   const [performance, setPerformance] = useState(null);
   const [seats, setSeats] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [paying, setPaying] = useState(false);
   const [error, setError] = useState("");
   const [selectedSeatId, setSelectedSeatId] = useState(null);
 
@@ -26,10 +28,7 @@ export default function PerformanceSeats() {
         setPerformance(pRes.data);
         setSeats(Array.isArray(sRes.data) ? sRes.data : []);
       })
-      .catch((err) => {
-        console.log("status:", err?.response?.status);
-        console.log("data:", err?.response?.data);
-        console.log("msg:", err?.message);
+      .catch(() => {
         setError("좌석 정보를 불러오지 못했습니다.");
       })
       .finally(() => setLoading(false));
@@ -49,12 +48,78 @@ export default function PerformanceSeats() {
     );
   };
 
-  const onPay = () => {
-    if (!selectedSeatId) return;
+  const onPay = async () => {
+    if (!selectedSeatId || !selectedSeat) return;
+
     const ok = window.confirm("결제하시겠습니까?");
     if (!ok) return;
 
-    alert(`선택 좌석: ${selectedSeat?.seatNumber} (다음 단계에서 결제 연동)`);
+    if (!window.IMP) {
+      alert("PortOne SDK가 로드되지 않았습니다.");
+      return;
+    }
+
+    setPaying(true);
+
+    try {
+      const reservationRes = await api.post("/api/reservations", {
+        performanceSeatId: selectedSeatId,
+      });
+
+      const reservationId =
+        reservationRes.data?.reservationId ?? reservationRes.data?.id;
+
+      if (!reservationId) throw new Error("reservationId 없음");
+
+      const prepareRes = await api.post("/api/payments/prepare", {
+        reservationId,
+      });
+
+      const merchantUid =
+        prepareRes.data?.merchantUid ?? prepareRes.data?.merchant_uid;
+      const amount = prepareRes.data?.amount;
+      const name = prepareRes.data?.name ?? performance?.title ?? "Killseat 결제";
+
+      if (!merchantUid || typeof amount !== "number") {
+        throw new Error("결제 준비 데이터 오류");
+      }
+
+      const IMP = window.IMP;
+      IMP.init(import.meta.env.VITE_PORTONE_IMP_CODE);
+
+      IMP.request_pay(
+        {
+          pg: "html5_inicis",
+          pay_method: "card",
+          merchant_uid: merchantUid,
+          name,
+          amount,
+        },
+        async (rsp) => {
+          try {
+            if (!rsp.success) {
+              alert("결제가 취소되었습니다.");
+              return;
+            }
+
+            await api.post("/api/payments/confirm", {
+              impUid: rsp.imp_uid,
+              merchantUid: rsp.merchant_uid,
+            });
+
+            alert("결제가 완료되었습니다.");
+            navigate("/my-reservations");
+          } catch {
+            alert("결제 검증 중 오류가 발생했습니다.");
+          } finally {
+            setPaying(false);
+          }
+        }
+      );
+    } catch {
+      alert("결제 진행 중 오류가 발생했습니다.");
+      setPaying(false);
+    }
   };
 
   if (loading) {
@@ -116,9 +181,8 @@ export default function PerformanceSeats() {
                 className={`seat-item ${
                   available ? "available" : "reserved"
                 } ${selected ? "selected" : ""}`}
-                disabled={!available}
+                disabled={!available || paying}
                 onClick={() => onClickSeat(s)}
-                title={s.status}
               >
                 {s.seatNumber}
               </button>
@@ -134,8 +198,12 @@ export default function PerformanceSeats() {
             </span>
           </div>
 
-          <button className="seat-pay" disabled={!selectedSeatId} onClick={onPay}>
-            결제하기
+          <button
+            className="seat-pay"
+            disabled={!selectedSeatId || paying}
+            onClick={onPay}
+          >
+            {paying ? "결제 진행중..." : "결제하기"}
           </button>
         </footer>
       </section>
