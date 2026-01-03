@@ -37,15 +37,18 @@ public class AuthService {
     }
 
     public TokenResponseDto refresh(RefreshRequestDto request) {
-        String username = jwtUtil.extractUsername(request.getRefreshToken());
+        String refreshToken = request.getRefreshToken();
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-        if (!jwtUtil.validateToken(request.getRefreshToken(), userDetails)) {
+        if (!jwtUtil.validateToken(refreshToken)) {
             throw new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.");
         }
 
+        String username = jwtUtil.extractUsername(refreshToken);
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
         String newAccessToken = jwtUtil.generateAccessToken(userDetails);
-        return new TokenResponseDto(newAccessToken, request.getRefreshToken());
+
+        return new TokenResponseDto(newAccessToken, refreshToken);
     }
 }
