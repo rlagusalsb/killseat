@@ -16,10 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "reservation",
-        uniqueConstraints = {
-            @UniqueConstraint(columnNames = {"performance_seat_id"})
-        })
+@Table(name = "reservation")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Reservation {
