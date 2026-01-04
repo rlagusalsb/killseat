@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PaymentConfirmRequestDto {
     @NotBlank
-    String merchantUid;
+    private String merchantUid;
 
     @NotBlank
-    String impUid;
+    private String impUid;
 }
