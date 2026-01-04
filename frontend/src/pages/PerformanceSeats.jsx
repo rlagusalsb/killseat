@@ -40,37 +40,34 @@ export default function PerformanceSeats() {
   }, [performanceId]);
 
   const sortedSeats = useMemo(() => {
-    const byRow = new Map();
-
     const parse = (seatNumber) => {
-      const m = String(seatNumber ?? "").trim().match(/^([A-Za-z])(\d+)$/);
+      const m = String(seatNumber ?? "")
+        .trim()
+        .match(/^([A-Za-z])(\d+)$/);
       if (!m) return null;
       return { row: m[1].toUpperCase(), col: Number(m[2]) };
     };
 
-    for (const s of seats) {
-      const p = parse(s.seatNumber);
-      if (!p) continue;
+    return [...seats].sort((a, b) => {
+      const pa = parse(a.seatNumber);
+      const pb = parse(b.seatNumber);
 
-      if (!byRow.has(p.row)) byRow.set(p.row, []);
-      byRow.get(p.row).push({ ...s, __col: p.col });
-    }
+      if (!pa && !pb) return 0;
+      if (!pa) return 1;
+      if (!pb) return -1;
 
-    const rows = Array.from(byRow.keys()).sort((a, b) => a.localeCompare(b));
+      const rowCmp = pa.row.localeCompare(pb.row);
+      if (rowCmp !== 0) return rowCmp;
 
-    const flattened = [];
-    for (const r of rows) {
-      const rowSeats = byRow.get(r);
-      rowSeats.sort((a, b) => a.__col - b.__col);
-      for (const item of rowSeats) flattened.push(item);
-    }
-
-    return flattened;
+      return pa.col - pb.col;
+    });
   }, [seats]);
 
   const selectedSeat = useMemo(() => {
     if (!selectedSeatId) return null;
-    return sortedSeats.find((s) => s.performanceSeatId === selectedSeatId) || null;
+    return (
+      sortedSeats.find((s) => s.performanceSeatId === selectedSeatId) || null
+    );
   }, [selectedSeatId, sortedSeats]);
 
   const isAvailable = (seat) => seat.status === "AVAILABLE";
@@ -96,15 +93,12 @@ export default function PerformanceSeats() {
     setPaying(true);
 
     let reservationId = null;
+    let preparedMerchantUid = null;
 
     try {
-      const reservationRes = await api.post(
-        `/api/reservations/${selectedSeatId}`
-      );
+      const reservationRes = await api.post(`/api/reservations/${selectedSeatId}`);
 
-      reservationId =
-        reservationRes.data?.reservationId ?? reservationRes.data?.id;
-
+      reservationId = reservationRes.data?.reservationId ?? reservationRes.data?.id;
       if (!reservationId) throw new Error("reservationId 없음");
 
       const prepareRes = await api.post("/api/payments/prepare", {
@@ -112,12 +106,13 @@ export default function PerformanceSeats() {
         method: "CARD",
       });
 
-      const merchantUid =
+      preparedMerchantUid =
         prepareRes.data?.merchantUid ?? prepareRes.data?.merchant_uid;
+
       const amount = prepareRes.data?.amount;
       const name = prepareRes.data?.name ?? performance?.title ?? "Killseat 결제";
 
-      if (!merchantUid || typeof amount !== "number") {
+      if (!preparedMerchantUid || typeof amount !== "number") {
         throw new Error("결제 준비 데이터 오류");
       }
 
@@ -127,7 +122,7 @@ export default function PerformanceSeats() {
         {
           pg: "kakaopay.TC0ONETIME",
           pay_method: "card",
-          merchant_uid: merchantUid,
+          merchant_uid: preparedMerchantUid,
           name,
           amount,
           buyer_email: "test@test.com",
@@ -147,7 +142,7 @@ export default function PerformanceSeats() {
 
             await api.post("/api/payments/confirm", {
               impUid: rsp.imp_uid,
-              merchantUid: rsp.merchant_uid,
+              merchantUid: preparedMerchantUid,
             });
 
             alert("결제가 완료되었습니다.");
@@ -228,9 +223,9 @@ export default function PerformanceSeats() {
             return (
               <button
                 key={s.performanceSeatId}
-                className={`seat-item ${
-                  available ? "available" : "reserved"
-                } ${selected ? "selected" : ""}`}
+                className={`seat-item ${available ? "available" : "reserved"} ${
+                  selected ? "selected" : ""
+                }`}
                 disabled={!available || paying}
                 onClick={() => onClickSeat(s)}
               >
