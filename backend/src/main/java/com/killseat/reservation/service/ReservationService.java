@@ -36,17 +36,21 @@ public class ReservationService {
 
     @Transactional
     public ReservationResponseDto reserveSeat(Long performanceSeatId, Long memberId) {
-        PerformanceSeat seat = performanceSeatRepository.findById(performanceSeatId)
+        PerformanceSeat seat = performanceSeatRepository.findByIdForUpdate(performanceSeatId)
                 .orElseThrow(() -> new EntityNotFoundException("좌석을 찾을 수 없습니다."));
 
         if (seat.getPerformance().getStatus() != PerformanceStatus.OPEN) {
             throw new IllegalStateException("예매가 시작되지 않았습니다.");
         }
 
-        seat.reserve();
+        if (!"AVAILABLE".equalsIgnoreCase(seat.getStatus().name())) {
+            throw new IllegalStateException("이미 예약된 좌석입니다.");
+        }
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+        seat.reserve();
 
         Reservation reservation = Reservation.builder()
                 .member(member)
@@ -73,7 +77,6 @@ public class ReservationService {
         }
 
         reservation.getPerformanceSeat().cancel();
-
         reservation.cancelBeforePayment();
 
         return reservationMapper.toDto(reservation);
