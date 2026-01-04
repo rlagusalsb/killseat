@@ -208,7 +208,9 @@ public class PaymentService {
 
         //성공 처리
         payment.cancel();
-        reservation.cancelAfterPayment(); //좌석도 풀어야 한다면 -> Reservation.cancel()에서 처리 or 서비스에서 seat 변경
+        reservation.cancelAfterPayment();
+
+        reservation.getPerformanceSeat().cancel();
 
         return new PaymentCancelResponseDto(
                 true,
