@@ -32,7 +32,7 @@ public class Payment {
     private String impUid;
 
     @Column(nullable = false)
-    private Integer amount;
+    private Long amount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -49,7 +49,7 @@ public class Payment {
     private LocalDateTime updatedAt;
 
     @Builder
-    private Payment(Reservation reservation, Integer amount, PaymentMethod method) {
+    private Payment(Reservation reservation, Long amount, PaymentMethod method) {
         this.reservation = reservation;
         this.amount = amount;
         this.method = method;
