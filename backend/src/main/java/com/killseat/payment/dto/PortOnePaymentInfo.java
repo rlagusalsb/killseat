@@ -9,5 +9,5 @@ public class PortOnePaymentInfo {
     private String impUid;
     private String merchantUid;
     private String status;
-    private Integer amount;
+    private Long amount;
 }

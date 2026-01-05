@@ -6,6 +6,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class PortOneCancelResult {
-    private Integer cancelAmount;
+    private Long cancelAmount;
     private String message;
 }
