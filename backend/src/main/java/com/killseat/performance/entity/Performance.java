@@ -22,6 +22,9 @@ public class Performance {
     @Column(nullable = false, length = 100)
     private String title;
 
+    @Column(nullable = false)
+    private Long price;
+
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
@@ -39,15 +42,17 @@ public class Performance {
     private LocalDateTime createdAt;
 
     @Builder
-    private Performance(String title, LocalDateTime startTime, LocalDateTime endTime, PerformanceStatus status) {
+    private Performance(String title, Long price, LocalDateTime startTime, LocalDateTime endTime, PerformanceStatus status) {
         this.title = title;
+        this.price = price;
         this.startTime = startTime;
         this.endTime = endTime;
         this.status = (status != null) ? status : PerformanceStatus.BEFORE_OPEN;
     }
 
-    public void update(String title, LocalDateTime startTime, LocalDateTime endTime) {
+    public void update(String title, Long price, LocalDateTime startTime, LocalDateTime endTime) {
         this.title = title;
+        this.price = price;
         this.startTime = startTime;
         this.endTime = endTime;
     }
