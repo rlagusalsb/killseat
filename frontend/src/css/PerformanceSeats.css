@@ -51,13 +51,9 @@
   font-size: 0.95rem;
 }
 
-.seat-back {
-  padding: 0.65rem 1rem;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  cursor: pointer;
-  white-space: nowrap;
+.seat-price {
+  font-weight: 800;
+  color: #222;
 }
 
 .stage {
@@ -138,6 +134,33 @@
   font-weight: 800;
 }
 
+.seat-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.seat-back {
+  padding: 0.8rem 1.2rem;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.seat-back:hover {
+  background: #f7f7f7;
+  border-color: #ccc;
+}
+
+.seat-back:disabled {
+  background: #f4f4f4;
+  color: #999;
+  cursor: not-allowed;
+}
+
 .seat-pay {
   padding: 0.8rem 1.6rem;
   background-color: red;
@@ -185,15 +208,17 @@
     height: 160px;
   }
 
-  .seat-back {
-    width: 100%;
-  }
-
   .seat-footer {
     flex-direction: column;
     align-items: stretch;
   }
 
+  .seat-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .seat-back,
   .seat-pay {
     width: 100%;
   }

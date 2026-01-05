@@ -41,9 +41,7 @@ export default function PerformanceSeats() {
 
   const sortedSeats = useMemo(() => {
     const parse = (seatNumber) => {
-      const m = String(seatNumber ?? "")
-        .trim()
-        .match(/^([A-Za-z])(\d+)$/);
+      const m = String(seatNumber ?? "").trim().match(/^([A-Za-z])(\d+)$/);
       if (!m) return null;
       return { row: m[1].toUpperCase(), col: Number(m[2]) };
     };
@@ -79,6 +77,13 @@ export default function PerformanceSeats() {
     );
   };
 
+  const formatPrice = (price) => {
+    if (price == null) return "-";
+    const n = Number(price);
+    if (Number.isNaN(n)) return "-";
+    return `${n.toLocaleString()}원`;
+  };
+
   const onPay = async () => {
     if (!selectedSeatId || !selectedSeat) return;
 
@@ -96,9 +101,12 @@ export default function PerformanceSeats() {
     let preparedMerchantUid = null;
 
     try {
-      const reservationRes = await api.post(`/api/reservations/${selectedSeatId}`);
+      const reservationRes = await api.post(
+        `/api/reservations/${selectedSeatId}`
+      );
 
-      reservationId = reservationRes.data?.reservationId ?? reservationRes.data?.id;
+      reservationId =
+        reservationRes.data?.reservationId ?? reservationRes.data?.id;
       if (!reservationId) throw new Error("reservationId 없음");
 
       const prepareRes = await api.post("/api/payments/prepare", {
@@ -205,12 +213,10 @@ export default function PerformanceSeats() {
               {performance?.startTime
                 ? new Date(performance.startTime).toLocaleString()
                 : "-"}
+              {" · "}
+              <span className="seat-price">{formatPrice(performance?.price)}</span>
             </p>
           </div>
-
-          <button className="seat-back" onClick={() => navigate(-1)}>
-            공연 목록
-          </button>
         </header>
 
         <div className="stage">STAGE</div>
@@ -243,13 +249,23 @@ export default function PerformanceSeats() {
             </span>
           </div>
 
-          <button
-            className="seat-pay"
-            disabled={!selectedSeatId || paying}
-            onClick={onPay}
-          >
-            {paying ? "결제 진행중..." : "결제하기"}
-          </button>
+          <div className="seat-actions">
+            <button
+              className="seat-back"
+              onClick={() => navigate(-1)}
+              disabled={paying}
+            >
+              공연 목록
+            </button>
+
+            <button
+              className="seat-pay"
+              disabled={!selectedSeatId || paying}
+              onClick={onPay}
+            >
+              {paying ? "결제 진행중..." : "결제하기"}
+            </button>
+          </div>
         </footer>
       </section>
     </main>
