@@ -12,6 +12,7 @@ public class PerformanceMapper {
         return new PerformanceResponseDto(
                 performance.getPerformanceId(),
                 performance.getTitle(),
+                performance.getPrice(),
                 performance.getStartTime(),
                 performance.getEndTime(),
                 performance.getStatus().name(),
