@@ -34,7 +34,7 @@ public class PaymentService {
             throw new IllegalStateException("결제 준비가 가능한 예약 상태가 아닙니다.");
         }
 
-        int expectedAmount = calculateExpectedAmount(reservation);
+        Long expectedAmount = calculateExpectedAmount(reservation);
         String merchantUid = "reservation-" + reservation.getReservationId() + "-" + UUID.randomUUID();
 
         Payment payment = Payment.builder()
@@ -128,7 +128,7 @@ public class PaymentService {
         }
 
         //3.금액 검증 (서버 기준 amount와 PortOne amount)
-        if (info.getAmount() == null || info.getAmount().intValue() != payment.getAmount()) {
+        if (info.getAmount() == null || info.getAmount().longValue() != payment.getAmount()) {
             payment.fail();
             return new PaymentConfirmResponseDto(
                     false,
@@ -221,8 +221,7 @@ public class PaymentService {
         );
     }
 
-    private int calculateExpectedAmount(Reservation reservation) {
-        //return reservation.getPerformanceSeat().getPerformance().getPrice();
-        return 30000;
+    private Long calculateExpectedAmount(Reservation reservation) {
+        return reservation.getPerformanceSeat().getPerformance().getPrice();
     }
 }
