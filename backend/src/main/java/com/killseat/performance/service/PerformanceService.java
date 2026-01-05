@@ -42,7 +42,7 @@ public class PerformanceService {
     public PerformanceResponseDto update(Long id, PerformanceRequestDto request) {
         Performance performance = performanceRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 공연을 찾을 수 없습니다."));
-        performance.update(request.getTitle(), request.getStartTime(), request.getEndTime());
+        performance.update(request.getTitle(), request.getPrice(), request.getStartTime(), request.getEndTime());
         return performanceMapper.toDto(performance);
     }
 
