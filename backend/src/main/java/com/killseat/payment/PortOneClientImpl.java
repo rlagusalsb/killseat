@@ -34,7 +34,7 @@ public class PortOneClientImpl implements PortOneClient {
                     p.getImpUid(),
                     p.getMerchantUid(),
                     p.getStatus(),
-                    p.getAmount() == null ? null : p.getAmount().intValue()
+                    p.getAmount() == null ? null : p.getAmount().longValue()
             );
         } catch (IamportResponseException | IOException e) {
             //PG 장애/네트워크 오류 → 서비스에서 fail 처리
@@ -54,14 +54,14 @@ public class PortOneClientImpl implements PortOneClient {
 
             Payment p = response.getResponse();
 
-            Integer cancelAmount =
+            Long cancelAmount =
                     (p == null || p.getCancelAmount() == null)
-                            ? 0
-                            : p.getCancelAmount().intValue();
+                            ? 0L
+                            : p.getCancelAmount().longValue();
 
             return new PortOneCancelResult(cancelAmount, response.getMessage());
         } catch (IamportResponseException | IOException e) {
-            return new PortOneCancelResult(0, e.getMessage());
+            return new PortOneCancelResult(0L, e.getMessage());
         }
     }
 }
