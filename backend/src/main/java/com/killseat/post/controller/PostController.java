@@ -7,6 +7,7 @@ import com.killseat.post.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,9 @@ public class PostController {
     @GetMapping
     public ResponseEntity<Page<PostResponseDto>> getPosts(
             @RequestParam(required = false) String keyword,
-            @PageableDefault(size = 10) Pageable pageable
+            @PageableDefault(size = 10,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC) Pageable pageable
     )
     {
         Page<PostResponseDto> response = postService.getPosts(keyword, pageable);
