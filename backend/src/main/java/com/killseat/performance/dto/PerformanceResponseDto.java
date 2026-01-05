@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 public class PerformanceResponseDto {
     private Long performanceId;
     private String title;
+    private Long price;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private String status;

@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class PerformanceRequestDto {
     private String title;
+    private Long price;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 }
