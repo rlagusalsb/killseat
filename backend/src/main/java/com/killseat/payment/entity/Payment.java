@@ -25,10 +25,10 @@ public class Payment {
     @JoinColumn(name = "reservation_id", nullable = false)
     private Reservation reservation;
 
-    @Column(nullable = false, unique = true, length = 64)
+    @Column(name = "merchant_uid", nullable = false, unique = true, length = 64)
     private String merchantUid;
 
-    @Column(length = 64)
+    @Column(name = "imp_uid", length = 64)
     private String impUid;
 
     @Column(nullable = false)

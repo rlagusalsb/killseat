@@ -1,7 +1,6 @@
 import "../css/PerformanceSeats.css";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
 import api from "../api/client";
 
 export default function PerformanceSeats() {
@@ -16,13 +15,19 @@ export default function PerformanceSeats() {
   const [selectedSeatId, setSelectedSeatId] = useState(null);
 
   useEffect(() => {
+    if (window.IMP) {
+      window.IMP.init("imp81861316");
+    }
+  }, []);
+
+  useEffect(() => {
     setLoading(true);
     setError("");
     setSelectedSeatId(null);
 
     Promise.all([
-      axios.get(`/api/performances/${performanceId}`),
-      axios.get(`/api/performance-seats/${performanceId}`),
+      api.get(`/api/performances/${performanceId}`),
+      api.get(`/api/performance-seats/${performanceId}`),
     ])
       .then(([pRes, sRes]) => {
         setPerformance(pRes.data);
@@ -34,10 +39,36 @@ export default function PerformanceSeats() {
       .finally(() => setLoading(false));
   }, [performanceId]);
 
+  const sortedSeats = useMemo(() => {
+    const parse = (seatNumber) => {
+      const m = String(seatNumber ?? "")
+        .trim()
+        .match(/^([A-Za-z])(\d+)$/);
+      if (!m) return null;
+      return { row: m[1].toUpperCase(), col: Number(m[2]) };
+    };
+
+    return [...seats].sort((a, b) => {
+      const pa = parse(a.seatNumber);
+      const pb = parse(b.seatNumber);
+
+      if (!pa && !pb) return 0;
+      if (!pa) return 1;
+      if (!pb) return -1;
+
+      const rowCmp = pa.row.localeCompare(pb.row);
+      if (rowCmp !== 0) return rowCmp;
+
+      return pa.col - pb.col;
+    });
+  }, [seats]);
+
   const selectedSeat = useMemo(() => {
     if (!selectedSeatId) return null;
-    return seats.find((s) => s.performanceSeatId === selectedSeatId) || null;
-  }, [selectedSeatId, seats]);
+    return (
+      sortedSeats.find((s) => s.performanceSeatId === selectedSeatId) || null
+    );
+  }, [selectedSeatId, sortedSeats]);
 
   const isAvailable = (seat) => seat.status === "AVAILABLE";
 
@@ -61,62 +92,76 @@ export default function PerformanceSeats() {
 
     setPaying(true);
 
+    let reservationId = null;
+    let preparedMerchantUid = null;
+
     try {
-      const reservationRes = await api.post("/api/reservations", {
-        performanceSeatId: selectedSeatId,
-      });
+      const reservationRes = await api.post(`/api/reservations/${selectedSeatId}`);
 
-      const reservationId =
-        reservationRes.data?.reservationId ?? reservationRes.data?.id;
-
+      reservationId = reservationRes.data?.reservationId ?? reservationRes.data?.id;
       if (!reservationId) throw new Error("reservationId 없음");
 
       const prepareRes = await api.post("/api/payments/prepare", {
         reservationId,
+        method: "CARD",
       });
 
-      const merchantUid =
+      preparedMerchantUid =
         prepareRes.data?.merchantUid ?? prepareRes.data?.merchant_uid;
+
       const amount = prepareRes.data?.amount;
       const name = prepareRes.data?.name ?? performance?.title ?? "Killseat 결제";
 
-      if (!merchantUid || typeof amount !== "number") {
+      if (!preparedMerchantUid || typeof amount !== "number") {
         throw new Error("결제 준비 데이터 오류");
       }
 
       const IMP = window.IMP;
-      IMP.init(import.meta.env.VITE_PORTONE_IMP_CODE);
 
       IMP.request_pay(
         {
-          pg: "html5_inicis",
+          pg: "kakaopay.TC0ONETIME",
           pay_method: "card",
-          merchant_uid: merchantUid,
+          merchant_uid: preparedMerchantUid,
           name,
           amount,
+          buyer_email: "test@test.com",
+          buyer_name: "테스터",
+          buyer_tel: "01012341234",
         },
         async (rsp) => {
           try {
-            if (!rsp.success) {
+            if (!rsp?.success) {
+              if (reservationId) {
+                await api.delete(`/api/reservations/${reservationId}`);
+              }
               alert("결제가 취소되었습니다.");
+              setPaying(false);
               return;
             }
 
             await api.post("/api/payments/confirm", {
               impUid: rsp.imp_uid,
-              merchantUid: rsp.merchant_uid,
+              merchantUid: preparedMerchantUid,
             });
 
             alert("결제가 완료되었습니다.");
             navigate("/my-reservations");
           } catch {
-            alert("결제 검증 중 오류가 발생했습니다.");
+            alert("결제 오류가 발생했습니다.");
           } finally {
             setPaying(false);
           }
         }
       );
     } catch {
+      if (reservationId) {
+        try {
+          await api.delete(`/api/reservations/${reservationId}`);
+        } catch {
+          alert("새로고침 후 다시 시도하세요.");
+        }
+      }
       alert("결제 진행 중 오류가 발생했습니다.");
       setPaying(false);
     }
@@ -171,16 +216,16 @@ export default function PerformanceSeats() {
         <div className="stage">STAGE</div>
 
         <div className="seat-grid">
-          {seats.map((s) => {
+          {sortedSeats.map((s) => {
             const available = isAvailable(s);
             const selected = selectedSeatId === s.performanceSeatId;
 
             return (
               <button
                 key={s.performanceSeatId}
-                className={`seat-item ${
-                  available ? "available" : "reserved"
-                } ${selected ? "selected" : ""}`}
+                className={`seat-item ${available ? "available" : "reserved"} ${
+                  selected ? "selected" : ""
+                }`}
                 disabled={!available || paying}
                 onClick={() => onClickSeat(s)}
               >
