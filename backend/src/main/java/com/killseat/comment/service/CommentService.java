@@ -28,14 +28,14 @@ public class CommentService {
     private final CommentMapper commentMapper;
 
     @Transactional(readOnly = true)
-    public List<CommentResponseDto> getComments(Long postId) {
+    public List<CommentResponseDto> getComments(Long postId, Long currentMemberId) {
         validatePostId(postId);
 
         List<Comment> parents =
                 commentRepository.findByPost_PostIdAndParentIsNullOrderByCreatedAtAsc(postId);
 
         return parents.stream()
-                .map(commentMapper::toDtoWithChildren)
+                .map(p -> commentMapper.toDtoWithChildren(p, currentMemberId))
                 .collect(Collectors.toList());
     }
 
@@ -70,7 +70,7 @@ public class CommentService {
                 .build();
 
         Comment saved = commentRepository.save(comment);
-        return commentMapper.toDto(saved);
+        return commentMapper.toDto(saved, memberId);
     }
 
     @Transactional
@@ -89,7 +89,7 @@ public class CommentService {
         }
 
         comment.update(request.getContent().trim());
-        return commentMapper.toDto(comment);
+        return commentMapper.toDto(comment, memberId);
     }
 
     @Transactional
