@@ -22,8 +22,13 @@ public class CommentController {
     private final CommentService commentService;
 
     @GetMapping("/posts/{postId}")
-    public ResponseEntity<List<CommentResponseDto>> getComments(@PathVariable Long postId) {
-        List<CommentResponseDto> response = commentService.getComments(postId);
+    public ResponseEntity<List<CommentResponseDto>> getComments(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal CustomUserDetails user
+    )
+    {
+        Long memberId = (user != null ? user.getMemberId() : null);
+        List<CommentResponseDto> response = commentService.getComments(postId, memberId);
         return ResponseEntity.ok(response);
     }
 
