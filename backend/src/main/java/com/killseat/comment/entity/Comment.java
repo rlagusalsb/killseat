@@ -22,6 +22,7 @@ public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "comment_id")
     private Long commentId;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -35,6 +36,9 @@ public class Comment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private Comment parent;
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> children = new ArrayList<>();
 
     @Column(nullable = false, length = 500)
     private String content;
@@ -53,10 +57,12 @@ public class Comment {
         this.content = content;
     }
 
-    public void linkPost(Post post) {
-        this.post = post;
-        if (!post.getComments().contains(this)) {
-            post.getComments().add(this);
-        }
+    public void update(String content) {
+        this.content = content;
+    }
+
+    public void addChild(Comment child) {
+        children.add(child);
+        child.parent = this;
     }
 }
