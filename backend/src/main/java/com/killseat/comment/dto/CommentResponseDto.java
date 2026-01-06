@@ -18,4 +18,5 @@ public class CommentResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<CommentResponseDto> children;
+    private boolean mine;
 }
