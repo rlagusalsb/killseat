@@ -18,6 +18,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+import static org.springframework.http.HttpMethod.*;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -32,9 +34,15 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**", "/api/members/**", "/api/performances/**", "/api/performance-seats/**").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/payments/confirm").permitAll()
+                        .requestMatchers(POST, "/api/payments/confirm").permitAll()
+
+                        .requestMatchers(GET, "/api/posts/**").permitAll()
+                        .requestMatchers(POST, "/api/posts/**").authenticated()
+                        .requestMatchers(PUT, "/api/posts/**").authenticated()
+                        .requestMatchers(DELETE, "/api/posts/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
