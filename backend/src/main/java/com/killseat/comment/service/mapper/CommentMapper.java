@@ -10,7 +10,10 @@ import java.util.stream.Collectors;
 @Component
 public class CommentMapper {
 
-    public CommentResponseDto toDto(Comment comment) {
+    public CommentResponseDto toDto(Comment comment, Long currentMemberId) {
+        boolean mine =
+                (currentMemberId != null) && (comment.getMember().equals(currentMemberId));
+
         return new CommentResponseDto(
                 comment.getCommentId(),
                 comment.getPost().getPostId(),
@@ -20,15 +23,20 @@ public class CommentMapper {
                 comment.getContent(),
                 comment.getCreatedAt(),
                 comment.getUpdatedAt(),
-                null
+                null,
+                mine
         );
     }
 
     //부모 댓글 하나를 받아, 해당 댓글의 대댓글들을 포함한 DTO로 변환
-    public CommentResponseDto toDtoWithChildren(Comment parent) {
+    public CommentResponseDto toDtoWithChildren(Comment parent, Long currentMemberId) {
         List<CommentResponseDto> children = parent.getChildren().stream()
-                .map(this::toDto)
+                .map(child -> toDto(child,currentMemberId))
                 .collect(Collectors.toList());
+
+        boolean mine =
+                (currentMemberId != null) &&
+                        (parent.getMember().getMemberId().equals(currentMemberId));
 
         return new CommentResponseDto(
                 parent.getCommentId(),
@@ -39,7 +47,8 @@ public class CommentMapper {
                 parent.getContent(),
                 parent.getCreatedAt(),
                 parent.getUpdatedAt(),
-                children
+                children,
+                mine
         );
     }
 }
