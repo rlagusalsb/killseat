@@ -43,6 +43,11 @@ public class SecurityConfig {
                         .requestMatchers(PUT, "/api/posts/**").authenticated()
                         .requestMatchers(DELETE, "/api/posts/**").authenticated()
 
+                        .requestMatchers(GET, "/api/comments/**").permitAll()
+                        .requestMatchers(POST, "/api/comments/**").authenticated()
+                        .requestMatchers(PUT, "/api/comments/**").authenticated()
+                        .requestMatchers(DELETE, "/api/comments/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
