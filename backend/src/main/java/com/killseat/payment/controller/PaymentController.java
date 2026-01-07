@@ -30,11 +30,4 @@ public class PaymentController {
         PaymentConfirmResponseDto response = paymentService.confirm(request);
         return ResponseEntity.ok(response);
     }
-
-    //결제 취소
-    @PostMapping("/cancel")
-    public ResponseEntity<PaymentCancelResponseDto> cancel(@RequestBody PaymentCancelRequestDto request) {
-        PaymentCancelResponseDto response = paymentService.cancel(request);
-        return ResponseEntity.ok(response);
-    }
 }
