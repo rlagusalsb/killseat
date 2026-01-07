@@ -1,6 +1,7 @@
 package com.killseat.mypage.controller;
 
 import com.killseat.config.CustomUserDetails;
+import com.killseat.mypage.dto.MyPageReservationDto;
 import com.killseat.payment.dto.PaymentCancelRequestDto;
 import com.killseat.payment.dto.PaymentCancelResponseDto;
 import com.killseat.payment.service.PaymentService;
@@ -22,7 +23,7 @@ public class MyPageController {
     private final PaymentService paymentService;
 
     @GetMapping("/reservations")
-    public ResponseEntity<List<ReservationResponseDto>> getMyReservations(
+    public ResponseEntity<List<MyPageReservationDto>> getMyReservations(
             @AuthenticationPrincipal CustomUserDetails user
     )
     {
