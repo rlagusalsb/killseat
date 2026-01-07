@@ -5,7 +5,6 @@ import com.killseat.mypage.dto.MyPageReservationDto;
 import com.killseat.payment.dto.PaymentCancelRequestDto;
 import com.killseat.payment.dto.PaymentCancelResponseDto;
 import com.killseat.payment.service.PaymentService;
-import com.killseat.reservation.dto.ReservationResponseDto;
 import com.killseat.reservation.service.ReservationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,8 +26,9 @@ public class MyPageController {
             @AuthenticationPrincipal CustomUserDetails user
     )
     {
-        List<ReservationResponseDto> reservations =
-                reservationService.getMyReservations(user.getMemberId());
+        List<MyPageReservationDto> reservations =
+                reservationService.getMyPageReservations(user.getMemberId());
+
         return ResponseEntity.ok(reservations);
     }
 
