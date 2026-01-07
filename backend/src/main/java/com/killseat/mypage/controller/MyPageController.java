@@ -24,7 +24,8 @@ public class MyPageController {
     @GetMapping("/reservations")
     public ResponseEntity<List<ReservationResponseDto>> getMyReservations(
             @AuthenticationPrincipal CustomUserDetails user
-    ) {
+    )
+    {
         List<ReservationResponseDto> reservations =
                 reservationService.getMyReservations(user.getMemberId());
         return ResponseEntity.ok(reservations);
@@ -35,7 +36,8 @@ public class MyPageController {
             @PathVariable Long paymentId,
             @RequestBody PaymentCancelRequestDto request,
             @AuthenticationPrincipal CustomUserDetails user
-    ) {
+    )
+    {
         PaymentCancelRequestDto fixed =
                 new PaymentCancelRequestDto(paymentId, request.getReason());
 
