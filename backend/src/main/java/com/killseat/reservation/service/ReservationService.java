@@ -2,6 +2,7 @@ package com.killseat.reservation.service;
 
 import com.killseat.member.entity.Member;
 import com.killseat.member.repository.MemberRepository;
+import com.killseat.mypage.dto.MyPageReservationDto;
 import com.killseat.performance.entity.PerformanceStatus;
 import com.killseat.performanceseat.entity.PerformanceSeat;
 import com.killseat.performanceseat.entity.PerformanceSeatStatus;
@@ -35,6 +36,14 @@ public class ReservationService {
         List<Reservation> reservations = reservationRepository.findAllByMember_MemberId(memberId);
         return reservations.stream()
                 .map(reservationMapper::toDto)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<MyPageReservationDto> getMyPageReservations(Long memberId) {
+        List<Reservation> reservations = reservationRepository.findAllByMember_MemberId(memberId);
+        return reservations.stream()
+                .map(reservationMapper::toMyPageDto)
                 .toList();
     }
 
