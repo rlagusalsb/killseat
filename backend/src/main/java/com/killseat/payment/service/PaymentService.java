@@ -192,11 +192,16 @@ public class PaymentService {
 
     //결제 취소
     @Transactional
-    public PaymentCancelResponseDto cancel(PaymentCancelRequestDto request) {
+    public PaymentCancelResponseDto cancel(PaymentCancelRequestDto request, Long memberId) {
         Payment payment = paymentRepository.findById(request.getPaymentId())
                 .orElseThrow(() -> new EntityNotFoundException("결제를 찾을 수 없습니다."));
 
         Reservation reservation = payment.getReservation();
+
+        if (!reservation.getMember().getMemberId().equals(memberId)) {
+            throw new IllegalStateException("본인 결제만 취소할 수 있습니다.");
+        }
+
         Long seatId = reservation.getPerformanceSeat().getPerformanceSeatId();
 
         if (payment.getStatus() == PaymentStatus.CANCELED) {
