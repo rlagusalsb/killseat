@@ -40,6 +40,9 @@ public class Reservation {
     @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Payment> payments = new ArrayList<>();
 
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 
@@ -47,10 +50,16 @@ public class Reservation {
     private LocalDateTime updatedAt;
 
     @Builder
-    private Reservation(Member member, PerformanceSeat performanceSeat, ReservationStatus status) {
+    private Reservation(Member member,
+                        PerformanceSeat performanceSeat,
+                        ReservationStatus status,
+                        LocalDateTime expiresAt
+    )
+    {
         this.member = member;
         this.performanceSeat = performanceSeat;
         this.status = (status != null) ? status : ReservationStatus.PENDING;
+        this.expiresAt = expiresAt;
     }
 
     public void addPayment(Payment payment) {
@@ -71,9 +80,11 @@ public class Reservation {
 
     //결제 실패
     public void payFailed() {
-        if (this.status != ReservationStatus.PENDING) {
-            throw new IllegalStateException("결제 실패 처리가 불가능합니다.");
-        }
+        cancelBeforePayment();
+    }
+
+    public void expire() {
+        cancelBeforePayment();
     }
 
     //결제 전 예약 취소
