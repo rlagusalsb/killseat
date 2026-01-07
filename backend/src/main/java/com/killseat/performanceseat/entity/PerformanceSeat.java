@@ -37,14 +37,31 @@ public class PerformanceSeat {
     private PerformanceSeat(Performance performance, Seat seat, PerformanceSeatStatus status) {
         this.performance = performance;
         this.seat = seat;
-        this.status = status;
+        this.status = (status != null) ? status : PerformanceSeatStatus.AVAILABLE;
     }
 
-    public void reserve() {
+    //결제 전 선점
+    public void hold() {
         if (this.status != PerformanceSeatStatus.AVAILABLE) {
             throw new IllegalStateException("예약할 수 없는 좌석입니다.");
         }
+        this.status = PerformanceSeatStatus.HELD;
+    }
+
+    //결제 성공
+    public void confirm() {
+        if (this.status != PerformanceSeatStatus.HELD) {
+            throw new IllegalStateException("선점된 좌석만 확정할 수 있습니다.");
+        }
         this.status = PerformanceSeatStatus.RESERVED;
+    }
+
+    //선점 해제
+    public void releaseHold() {
+        if (this.status != PerformanceSeatStatus.HELD) {
+            throw new IllegalStateException("선점 상태만 해제할 수 있습니다.");
+        }
+        this.status = PerformanceSeatStatus.AVAILABLE;
     }
 
     public void cancel() {
