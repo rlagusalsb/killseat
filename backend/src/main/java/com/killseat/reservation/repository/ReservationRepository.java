@@ -42,6 +42,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     @Query("""
         select r
           from Reservation r
+          join fetch r.performanceSeat ps
          where r.status = com.killseat.reservation.entity.ReservationStatus.PENDING
            and r.expiresAt < :now
     """)
