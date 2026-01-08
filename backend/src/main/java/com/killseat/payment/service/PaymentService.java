@@ -42,6 +42,17 @@ public class PaymentService {
             throw new IllegalStateException("좌석이 결제 대기 상태가 아닙니다.");
         }
 
+        int changedReservationStatus = reservationRepository.updateStatusIfMatch(
+                reservation.getReservationId(),
+                ReservationStatus.PENDING,
+                ReservationStatus.PAYING,
+                LocalDateTime.now()
+        );
+
+        if (changedReservationStatus == 0) {
+            throw new IllegalStateException("이미 결제 진행 중이거나 상태가 변경되었습니다.");
+        }
+
         Long expectedAmount = calculateExpectedAmount(reservation);
         String merchantUid = "reservation-" + reservation.getReservationId() + "-" + UUID.randomUUID();
 
@@ -85,7 +96,7 @@ public class PaymentService {
         }
 
         //예약 상태 체크
-        if (reservation.getStatus() != ReservationStatus.PENDING) {
+        if (reservation.getStatus() != ReservationStatus.PAYING) {
             return new PaymentConfirmResponseDto(
                     false,
                     payment.getPaymentId(),
@@ -169,7 +180,7 @@ public class PaymentService {
         //예약 확정: PENDING -> CONFIRMED
         reservationRepository.updateStatusIfMatch(
                 reservation.getReservationId(),
-                ReservationStatus.PENDING,
+                ReservationStatus.PAYING,
                 ReservationStatus.CONFIRMED,
                 LocalDateTime.now()
         );
@@ -279,7 +290,7 @@ public class PaymentService {
         //예약: PENDING -> CANCELED
         reservationRepository.updateStatusIfMatch(
                 reservation.getReservationId(),
-                ReservationStatus.PENDING,
+                ReservationStatus.PAYING,
                 ReservationStatus.CANCELED,
                 LocalDateTime.now()
         );
