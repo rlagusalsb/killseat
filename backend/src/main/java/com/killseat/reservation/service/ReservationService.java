@@ -14,6 +14,8 @@ import com.killseat.reservation.repository.ReservationRepository;
 import com.killseat.reservation.service.mapper.ReservationMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,11 +34,12 @@ public class ReservationService {
     private final ReservationMapper reservationMapper;
 
     @Transactional(readOnly = true)
-    public List<ReservationResponseDto> getMyReservations(Long memberId) {
-        List<Reservation> reservations = reservationRepository.findAllByMember_MemberId(memberId);
-        return reservations.stream()
-                .map(reservationMapper::toDto)
-                .toList();
+    public Page<MyPageReservationDto> getMyPageReservations(Long memberId, int page, int size) {
+        PageRequest pageable = PageRequest.of(page, size);
+
+        return reservationRepository
+                .findMyPageReservations(memberId, ReservationStatus.CANCELED, pageable)
+                .map(reservationMapper::toMyPageDto);
     }
 
     @Transactional(readOnly = true)
