@@ -45,7 +45,8 @@ public class PerformanceSeatService {
 
     @Transactional(readOnly = true)
     public List<PerformanceSeatResponseDto> getSeatsByPerformance(Long performanceId) {
-        List<PerformanceSeat> seats = performanceSeatRepository.findByPerformance_PerformanceId(performanceId);
+        List<PerformanceSeat> seats = performanceSeatRepository.findAllWithSeatByPerformanceId(performanceId);
+
         return seats.stream()
                 .map(performanceSeatMapper::toDto)
                 .toList();
