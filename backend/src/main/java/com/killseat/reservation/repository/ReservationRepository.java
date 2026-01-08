@@ -13,6 +13,17 @@ import java.util.List;
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
     List<Reservation> findAllByMember_MemberId(Long memberId);
 
+    @Query("""
+        select r
+          from Reservation r
+          join fetch r.member m
+          join fetch r.performanceSeat ps
+          join fetch ps.seat s
+          join fetch ps.performance p
+         where r.reservationId = :id
+    """)
+    Reservation findDetailById(@Param("id") Long reservationId);
+
     //상태 조건부 변경
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
