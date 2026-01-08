@@ -42,14 +42,6 @@ public class ReservationService {
                 .map(reservationMapper::toMyPageDto);
     }
 
-    @Transactional(readOnly = true)
-    public List<MyPageReservationDto> getMyPageReservations(Long memberId) {
-        List<Reservation> reservations = reservationRepository.findAllByMember_MemberId(memberId);
-        return reservations.stream()
-                .map(reservationMapper::toMyPageDto)
-                .toList();
-    }
-
     @Transactional
     public ReservationResponseDto reserveSeat(Long performanceSeatId, Long memberId) {
         PerformanceSeat seat = performanceSeatRepository.findById(performanceSeatId)
