@@ -24,7 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReservationService {
 
-    private static final int HOLD_MINUTES = 10;
+    private static final int HOLD_MINUTES = 5;
 
     private final ReservationRepository reservationRepository;
     private final MemberRepository memberRepository;
