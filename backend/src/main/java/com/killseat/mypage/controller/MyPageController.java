@@ -7,6 +7,7 @@ import com.killseat.payment.dto.PaymentCancelResponseDto;
 import com.killseat.payment.service.PaymentService;
 import com.killseat.reservation.service.ReservationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -22,13 +23,14 @@ public class MyPageController {
     private final PaymentService paymentService;
 
     @GetMapping("/reservations")
-    public ResponseEntity<List<MyPageReservationDto>> getMyReservations(
-            @AuthenticationPrincipal CustomUserDetails user
+    public ResponseEntity<Page<MyPageReservationDto>> getMyReservations(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
     )
     {
-        List<MyPageReservationDto> reservations =
-                reservationService.getMyPageReservations(user.getMemberId());
-
+        Page<MyPageReservationDto> reservations =
+                reservationService.getMyPageReservations(user.getMemberId(), page, size);
         return ResponseEntity.ok(reservations);
     }
 
