@@ -2,6 +2,8 @@ package com.killseat.reservation.repository;
 
 import com.killseat.reservation.entity.Reservation;
 import com.killseat.reservation.entity.ReservationStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -47,4 +49,26 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
            and r.expiresAt < :now
     """)
     List<Reservation> findExpiredPendings(@Param("now") LocalDateTime now);
+
+    @Query(value = """
+        select r
+          from Reservation r
+          join fetch r.performanceSeat ps
+          join fetch ps.seat s
+          join fetch ps.performance p
+         where r.member.memberId = :memberId
+           and r.status <> :excludedStatus
+         order by r.createdAt desc
+    """,
+            countQuery = """
+        select count(r)
+          from Reservation r
+         where r.member.memberId = :memberId
+           and r.status <> :excludedStatus
+    """)
+    Page<Reservation> findMyPageReservations(
+            @Param("memberId") Long memberId,
+            @Param("excludedStatus") ReservationStatus excludedStatus,
+            Pageable pageable
+    );
 }
