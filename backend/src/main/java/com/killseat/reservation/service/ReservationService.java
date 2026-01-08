@@ -80,6 +80,10 @@ public class ReservationService {
 
         try {
             reservationRepository.save(reservation);
+
+            Reservation detail = reservationRepository.findDetailById(reservation.getReservationId());
+            return reservationMapper.toDto(detail);
+
         } catch (RuntimeException e) {
             performanceSeatRepository.updateStatusIfMatch(
                     performanceSeatId,
@@ -88,8 +92,6 @@ public class ReservationService {
             );
             throw e;
         }
-
-        return reservationMapper.toDto(reservation);
     }
 
     @Transactional
