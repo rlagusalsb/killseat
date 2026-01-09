@@ -10,11 +10,7 @@ const STATUS_LABEL = {
 };
 
 const statusLabel = (s) => STATUS_LABEL[s] ?? s ?? "-";
-
-const statusClass = (s) => {
-  const key = String(s || "").toLowerCase();
-  return `myresv-status myresv-status--${key}`;
-};
+const statusClass = (s) => `myresv-status myresv-status--${String(s || "").toLowerCase()}`;
 
 export default function MyReservations() {
   const [reservations, setReservations] = useState([]);
@@ -28,34 +24,28 @@ export default function MyReservations() {
     try {
       setLoading(true);
       const res = await api.get("/api/mypage/reservations");
-      const data = res.data.content || (Array.isArray(res.data) ? res.data : []);
-      setReservations(data);
+      setReservations(res.data.content || res.data || []);
     } catch (e) {
       console.error(e);
-      alert("예약 정보를 불러오지 못했습니다.");
-      setReservations([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCancel = async (reservation) => {
+  const handleCancel = async (reservationId) => {
     if (!window.confirm("예약을 취소하시겠습니까?")) return;
 
     try {
-      if (reservation.paymentId) {
-        await api.post(`/api/mypage/payments/${reservation.paymentId}/cancel`, {
-          reason: "테스트 예약 취소",
-        });
-      } else {
-        await api.post(`/api/reservations/${reservation.reservationId}/cancel`);
-      }
-      
-      alert("예약이 정상적으로 취소되었습니다.");
+      await api.post(`/api/reservations/${reservationId}/cancel`);
+      alert("정상적으로 취소되었습니다.");
       fetchReservations();
     } catch (e) {
       console.error(e);
-      alert("예약 취소에 실패했습니다.");
+      if (e.response?.status === 403) {
+        alert("취소 권한이 없습니다. 보안 설정을 확인하세요.");
+      } else {
+        alert("취소 처리 중 오류가 발생했습니다.");
+      }
     }
   };
 
@@ -71,17 +61,12 @@ export default function MyReservations() {
       {reservations.length === 0 ? (
         <div className="myresv-empty">
           <p className="myresv-empty-title">예약 내역이 없습니다.</p>
-          <p className="myresv-empty-sub">공연을 선택하고 좌석을 예매해보세요.</p>
         </div>
       ) : (
         <div className="myresv-list">
           {reservations.map((r) => (
             <div key={r.reservationId} className="myresv-card">
-              <img
-                className="myresv-thumb"
-                src={r.performanceThumbnailUrl}
-                alt=""
-              />
+              <img className="myresv-thumb" src={r.performanceThumbnailUrl} alt="" />
               <div className="myresv-body">
                 <div className="myresv-row">
                   <h4 className="myresv-perf">{r.performanceTitle}</h4>
@@ -89,27 +74,17 @@ export default function MyReservations() {
                     {statusLabel(r.reservationStatus)}
                   </span>
                 </div>
-                
                 <div className="myresv-meta">
                   <div className="myresv-meta-item">
                     <span className="myresv-meta-label">좌석</span>
                     <span className="myresv-meta-value">{r.seatInfo}</span>
                   </div>
-                  {r.reservedAt && (
-                    <div className="myresv-meta-item">
-                      <span className="myresv-meta-label">예약일</span>
-                      <span className="myresv-meta-value">
-                        {new Date(r.reservedAt).toLocaleString()}
-                      </span>
-                    </div>
-                  )}
                 </div>
-
                 <div className="myresv-actions">
                   {r.reservationStatus === "CONFIRMED" && (
-                    <button
-                      className="myresv-btn myresv-btn--danger"
-                      onClick={() => handleCancel(r)}
+                    <button 
+                      className="myresv-btn myresv-btn--danger" 
+                      onClick={() => handleCancel(r.reservationId)}
                     >
                       예약 취소
                     </button>
