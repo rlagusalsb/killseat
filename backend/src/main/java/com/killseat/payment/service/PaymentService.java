@@ -31,8 +31,11 @@ public class PaymentService {
     //서버에서 금액 계산 -> merchantUid 생성 payment 생성/저장 -> 반환
     @Transactional
     public PaymentPrepareResponseDto prepare(PaymentPrepareRequestDto request) {
-        Reservation reservation = reservationRepository.findById(request.getReservationId())
-                .orElseThrow(() -> new EntityNotFoundException("예약을 찾을 수 없습니다."));
+        Reservation reservation = reservationRepository.findForPaymentPrepare(request.getReservationId());
+
+        if (reservation == null) {
+            throw new EntityNotFoundException("예약을 찾을 수 없습니다.");
+        }
 
         if (reservation.getStatus() != ReservationStatus.PENDING) {
             throw new IllegalStateException("결제 준비가 가능한 예약 상태가 아닙니다.");
