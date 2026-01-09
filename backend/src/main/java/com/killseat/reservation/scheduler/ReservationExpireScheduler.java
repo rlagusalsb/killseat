@@ -25,26 +25,23 @@ public class ReservationExpireScheduler {
     public void expireReservations() {
         LocalDateTime now = LocalDateTime.now();
 
-        List<Reservation> expired = reservationRepository.findExpiredHoldOrPaying(now);
+        List<Reservation> expired = reservationRepository.findExpiredPendingOnly(now);
 
         if (expired.isEmpty()) {
             return;
         }
 
         for (Reservation reservation : expired) {
-            Long reservationId = reservation.getReservationId();
-
             int changed = reservationRepository.updateStatusIfMatch(
-                    reservationId,
+                    reservation.getReservationId(),
                     ReservationStatus.PENDING,
                     ReservationStatus.CANCELED,
                     now
             );
 
             if (changed > 0) {
-                Long performanceSeatId = reservation.getPerformanceSeat().getPerformanceSeatId();
                 performanceSeatRepository.updateStatusIfMatch(
-                        performanceSeatId,
+                        reservation.getPerformanceSeat().getPerformanceSeatId(),
                         PerformanceSeatStatus.HELD,
                         PerformanceSeatStatus.AVAILABLE
                 );
