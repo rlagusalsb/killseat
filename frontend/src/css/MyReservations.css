@@ -26,6 +26,8 @@
   margin: 0 auto;
   padding: 32px 16px;
   color: #666;
+  text-align: center;
+  font-weight: 600;
 }
 
 .myresv-empty {
@@ -125,6 +127,12 @@
   color: #8a5a00;
 }
 
+.myresv-status--paying {
+  background: rgba(13, 110, 253, 0.1);
+  border-color: rgba(13, 110, 253, 0.25);
+  color: #0d6efd;
+}
+
 .myresv-status--canceled,
 .myresv-status--cancelled {
   background: rgba(0, 0, 0, 0.03);
@@ -156,7 +164,10 @@
 }
 
 .myresv-actions {
-  margin-top: 2px;
+  margin-top: auto;
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px;
 }
 
 .myresv-btn {
@@ -176,15 +187,16 @@
   transform: translateY(-1px);
 }
 
-.myresv-btn:active {
-  transform: translateY(0);
-  opacity: 0.85;
-}
-
 .myresv-btn--danger {
   background: #ff3b30;
   border-color: #ff3b30;
   color: #fff;
+}
+
+.myresv-btn--danger:hover {
+  background: #e03126;
+  border-color: #e03126;
+  box-shadow: 0 4px 12px rgba(255, 59, 48, 0.2);
 }
 
 @media (max-width: 640px) {
