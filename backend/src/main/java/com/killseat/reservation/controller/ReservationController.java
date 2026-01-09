@@ -26,7 +26,7 @@ public class ReservationController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/{reservationId}")
+    @PostMapping("/{reservationId}/cancel")
     public ResponseEntity<ReservationResponseDto> cancelReservation(
             @PathVariable Long reservationId,
             @AuthenticationPrincipal CustomUserDetails user
