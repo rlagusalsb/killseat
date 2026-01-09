@@ -28,7 +28,6 @@ public class PaymentService {
     private final PortOneClient portOneClient;
 
     //결제 준비
-    //서버에서 금액 계산 -> merchantUid 생성 payment 생성/저장 -> 반환
     @Transactional
     public PaymentPrepareResponseDto prepare(PaymentPrepareRequestDto request) {
         Reservation reservation = reservationRepository.findForPaymentPrepare(request.getReservationId());
@@ -39,10 +38,6 @@ public class PaymentService {
 
         if (reservation.getStatus() != ReservationStatus.PENDING) {
             throw new IllegalStateException("결제 준비가 가능한 예약 상태가 아닙니다.");
-        }
-
-        if (reservation.getPerformanceSeat().getStatus() != PerformanceSeatStatus.HELD) {
-            throw new IllegalStateException("좌석이 결제 대기 상태가 아닙니다.");
         }
 
         int changedReservationStatus = reservationRepository.updateStatusIfMatch(
@@ -78,16 +73,10 @@ public class PaymentService {
             throw e;
         }
 
-        return new PaymentPrepareResponseDto(
-                payment.getPaymentId(),
-                payment.getMerchantUid(),
-                payment.getAmount(),
-                "공연 예매"
-        );
+        return new PaymentPrepareResponseDto(payment.getPaymentId(), payment.getMerchantUid(), payment.getAmount(), "공연 예매");
     }
 
     //결제 확정
-    //merchantUid로 payment 조회 -> 멱등 -> 결제 조회
     @Transactional
     public PaymentConfirmResponseDto confirm(PaymentConfirmRequestDto request) {
         Payment payment = paymentRepository.findByMerchantUid(request.getMerchantUid())
@@ -96,81 +85,16 @@ public class PaymentService {
         Reservation reservation = payment.getReservation();
         Long seatId = reservation.getPerformanceSeat().getPerformanceSeatId();
 
-        //이미 처리된 결제면 현재 상태 그대로 응답
         if (payment.getStatus() != PaymentStatus.PENDING) {
-            boolean paid = payment.getStatus() == PaymentStatus.SUCCESS;
-            return new PaymentConfirmResponseDto(
-                    paid,
-                    payment.getPaymentId(),
-                    payment.getStatus().name(),
-                    reservation.getStatus().name(),
-                    "이미 처리된 결제입니다."
-            );
+            return new PaymentConfirmResponseDto(false, payment.getPaymentId(), payment.getStatus().name(), reservation.getStatus().name(), "이미 처리된 결제입니다.");
         }
 
-        //예약 상태 체크
-        if (reservation.getStatus() != ReservationStatus.PAYING) {
-            return new PaymentConfirmResponseDto(
-                    false,
-                    payment.getPaymentId(),
-                    payment.getStatus().name(),
-                    reservation.getStatus().name(),
-                    "결제 확정이 가능한 예약 상태가 아닙니다."
-            );
-        }
-
-        //결제 조회
         PortOnePaymentInfo info = portOneClient.getPaymentInfo(request.getImpUid());
-
-        //조회 실패
-        if (info == null) {
+        if (info == null || info.getAmount().longValue() != payment.getAmount()) {
             markFailAndReleaseSeat(payment, reservation, seatId);
-            return new PaymentConfirmResponseDto(
-                    false,
-                    payment.getPaymentId(),
-                    payment.getStatus().name(),
-                    reservation.getStatus().name(),
-                    "결제 조회에 실패했습니다."
-            );
+            return new PaymentConfirmResponseDto(false, payment.getPaymentId(), payment.getStatus().name(), reservation.getStatus().name(), "결제 검증 실패");
         }
 
-        //1.merchantUid 검증
-        if (info.getMerchantUid() == null || !payment.getMerchantUid().equals(info.getMerchantUid())) {
-            markFailAndReleaseSeat(payment, reservation, seatId);
-            return new PaymentConfirmResponseDto(
-                    false,
-                    payment.getPaymentId(),
-                    payment.getStatus().name(),
-                    reservation.getStatus().name(),
-                    "결제 요청이 일치하지 않습니다."
-            );
-        }
-
-        //2.결제 상태 검증
-        if (info.getStatus() == null || !"paid".equalsIgnoreCase(info.getStatus())) {
-            markFailAndReleaseSeat(payment, reservation, seatId);
-            return new PaymentConfirmResponseDto(
-                    false,
-                    payment.getPaymentId(),
-                    payment.getStatus().name(),
-                    reservation.getStatus().name(),
-                    "결제가 완료되지 않았습니다."
-            );
-        }
-
-        //3.금액 검증 (서버 기준 amount와 PortOne amount)
-        if (info.getAmount() == null || info.getAmount().longValue() != payment.getAmount()) {
-            markFailAndReleaseSeat(payment, reservation, seatId);
-            return new PaymentConfirmResponseDto(
-                    false,
-                    payment.getPaymentId(),
-                    payment.getStatus().name(),
-                    reservation.getStatus().name(),
-                    "결제 금액이 일치하지 않습니다."
-            );
-        }
-
-        //예약 확정: PENDING -> CONFIRMED
         int reservationConfirmed = reservationRepository.updateStatusIfMatch(
                 reservation.getReservationId(),
                 ReservationStatus.PAYING,
@@ -179,16 +103,9 @@ public class PaymentService {
         );
 
         if (reservationConfirmed == 0) {
-            return new PaymentConfirmResponseDto(
-                    false,
-                    payment.getPaymentId(),
-                    payment.getStatus().name(),
-                    reservation.getStatus().name(),
-                    "예약 상태가 변경되어 확정할 수 없습니다."
-            );
+            return new PaymentConfirmResponseDto(false, payment.getPaymentId(), payment.getStatus().name(), reservation.getStatus().name(), "예약 상태 변경 실패");
         }
 
-        //좌석 확정: HELD -> RESERVED
         int seatReserved = performanceSeatRepository.updateStatusIfMatch(
                 seatId,
                 PerformanceSeatStatus.HELD,
@@ -197,41 +114,13 @@ public class PaymentService {
 
         if (seatReserved == 0) {
             markFailAndReleaseSeat(payment, reservation, seatId);
-            return new PaymentConfirmResponseDto(
-                    false,
-                    payment.getPaymentId(),
-                    payment.getStatus().name(),
-                    reservation.getStatus().name(),
-                    "좌석 상태가 변경되어 확정할 수 없습니다."
-            );
+            return new PaymentConfirmResponseDto(false, payment.getPaymentId(), payment.getStatus().name(), reservation.getStatus().name(), "좌석 선점 만료");
         }
 
-        int paymentSucceeded = paymentRepository.updateStatusIfMatch(
-                payment.getPaymentId(),
-                PaymentStatus.PENDING,
-                PaymentStatus.SUCCESS
-        );
-
-        if (paymentSucceeded == 0) {
-            boolean paid = payment.getStatus() == PaymentStatus.SUCCESS;
-            return new PaymentConfirmResponseDto(
-                    paid,
-                    payment.getPaymentId(),
-                    payment.getStatus().name(),
-                    reservation.getStatus().name(),
-                    "이미 처리된 결제입니다."
-            );
-        }
-
+        paymentRepository.updateStatusIfMatch(payment.getPaymentId(), PaymentStatus.PENDING, PaymentStatus.SUCCESS);
         payment.assignImpUid(info.getImpUid());
 
-        return new PaymentConfirmResponseDto(
-                true,
-                payment.getPaymentId(),
-                PaymentStatus.SUCCESS.name(),
-                ReservationStatus.CONFIRMED.name(),
-                "결제가 완료되었습니다."
-        );
+        return new PaymentConfirmResponseDto(true, payment.getPaymentId(), PaymentStatus.SUCCESS.name(), ReservationStatus.CONFIRMED.name(), "결제 완료");
     }
 
     //결제 취소
@@ -246,94 +135,26 @@ public class PaymentService {
             throw new IllegalStateException("본인 결제만 취소할 수 있습니다.");
         }
 
-        Long seatId = reservation.getPerformanceSeat().getPerformanceSeatId();
-
         if (payment.getStatus() == PaymentStatus.CANCELED) {
-            return new PaymentCancelResponseDto(
-                    true,
-                    payment.getPaymentId(),
-                    payment.getStatus().name(),
-                    reservation.getStatus().name(),
-                    "이미 취소된 결제입니다."
-            );
+            return new PaymentCancelResponseDto(true, payment.getPaymentId(), payment.getStatus().name(), reservation.getStatus().name(), "이미 취소되었습니다.");
         }
 
-        if (payment.getStatus() != PaymentStatus.SUCCESS) {
-            return new PaymentCancelResponseDto(
-                    false,
-                    payment.getPaymentId(),
-                    payment.getStatus().name(),
-                    reservation.getStatus().name(),
-                    "취소 가능한 결제 상태가 아닙니다."
-            );
+        if (payment.getImpUid() != null) {
+            portOneClient.cancelPayment(payment.getImpUid(), request.getReason());
         }
 
-        //취소에는 impUid 필요
-        if (payment.getImpUid() == null || payment.getImpUid().isBlank()) {
-            return new PaymentCancelResponseDto(
-                    false,
-                    payment.getPaymentId(),
-                    payment.getStatus().name(),
-                    reservation.getStatus().name(),
-                    "impUid가 없어 결제를 취소할 수 없습니다."
-            );
-        }
+        paymentRepository.updateStatusIfMatch(payment.getPaymentId(), PaymentStatus.SUCCESS, PaymentStatus.CANCELED);
+        reservationRepository.updateStatusIfMatch(reservation.getReservationId(), ReservationStatus.CONFIRMED, ReservationStatus.CANCELED, LocalDateTime.now());
+        performanceSeatRepository.updateStatusIfMatch(reservation.getPerformanceSeat().getPerformanceSeatId(), PerformanceSeatStatus.RESERVED, PerformanceSeatStatus.AVAILABLE);
 
-        //1.PortOne 취소 호출
-        PortOneCancelResult cancelRes = portOneClient.cancelPayment(payment.getImpUid(), request.getReason());
-
-        //2.취소 성공 판단
-        if (cancelRes == null || cancelRes.getCancelAmount() == null || cancelRes.getCancelAmount() <= 0) {
-            return new PaymentCancelResponseDto(
-                    false,
-                    payment.getPaymentId(),
-                    payment.getStatus().name(),
-                    reservation.getStatus().name(),
-                    "결제 취소에 실패했습니다."
-            );
-        }
-
-        //성공 처리
-        payment.cancel();
-        reservation.cancelAfterPayment();
-
-        performanceSeatRepository.updateStatusIfMatch(
-                seatId,
-                PerformanceSeatStatus.RESERVED,
-                PerformanceSeatStatus.AVAILABLE
-        );
-
-        return new PaymentCancelResponseDto(
-                true,
-                payment.getPaymentId(),
-                payment.getStatus().name(),
-                reservation.getStatus().name(),
-                "결제가 취소되었습니다."
-        );
+        return new PaymentCancelResponseDto(true, payment.getPaymentId(), PaymentStatus.CANCELED.name(), ReservationStatus.CANCELED.name(), "취소 완료");
     }
 
+    //실패 처리
     private void markFailAndReleaseSeat(Payment payment, Reservation reservation, Long seatId) {
-        //결제: PENDING -> FAILED
-        paymentRepository.updateStatusIfMatch(
-                payment.getPaymentId(),
-                PaymentStatus.PENDING,
-                PaymentStatus.FAILED
-        );
-
-        //예약: PENDING -> CANCELED
-        reservationRepository.updateStatusIfMatch(
-                reservation.getReservationId(),
-                ReservationStatus.PAYING,
-                ReservationStatus.CANCELED,
-                LocalDateTime.now()
-        );
-
-        //좌석: HELD -> AVAILABLE
-        performanceSeatRepository.updateStatusIfMatch(
-                seatId,
-                PerformanceSeatStatus.HELD,
-                PerformanceSeatStatus.AVAILABLE
-        );
+        paymentRepository.updateStatusIfMatch(payment.getPaymentId(), PaymentStatus.PENDING, PaymentStatus.FAILED);
+        reservationRepository.updateStatusIfMatch(reservation.getReservationId(), reservation.getStatus(), ReservationStatus.CANCELED, LocalDateTime.now());
+        performanceSeatRepository.updateStatusIfMatch(seatId, PerformanceSeatStatus.HELD, PerformanceSeatStatus.AVAILABLE);
     }
 
     private Long calculateExpectedAmount(Reservation reservation) {
