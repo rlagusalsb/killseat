@@ -27,6 +27,7 @@ export default function MyReservations() {
       setReservations(res.data.content || res.data || []);
     } catch (e) {
       console.error(e);
+      setReservations([]);
     } finally {
       setLoading(false);
     }
@@ -41,11 +42,8 @@ export default function MyReservations() {
       fetchReservations();
     } catch (e) {
       console.error(e);
-      if (e.response?.status === 403) {
-        alert("취소 권한이 없습니다. 보안 설정을 확인하세요.");
-      } else {
-        alert("취소 처리 중 오류가 발생했습니다.");
-      }
+      const msg = e.response?.data?.message || "취소 중 오류가 발생했습니다.";
+      alert(msg);
     }
   };
 
