@@ -63,7 +63,17 @@ public class PaymentService {
                 .build();
         payment.assignMerchantUid(merchantUid);
 
-        paymentRepository.save(payment);
+        try {
+            paymentRepository.save(payment);
+        } catch (RuntimeException e) {
+            reservationRepository.updateStatusIfMatch(
+                    reservation.getReservationId(),
+                    ReservationStatus.PAYING,
+                    ReservationStatus.PENDING,
+                    LocalDateTime.now()
+            );
+            throw e;
+        }
 
         return new PaymentPrepareResponseDto(
                 payment.getPaymentId(),
@@ -157,14 +167,49 @@ public class PaymentService {
             );
         }
 
-        //확정
-        int pUpdated = paymentRepository.updateStatusIfMatch(
+        //예약 확정: PENDING -> CONFIRMED
+        int reservationConfirmed = reservationRepository.updateStatusIfMatch(
+                reservation.getReservationId(),
+                ReservationStatus.PAYING,
+                ReservationStatus.CONFIRMED,
+                LocalDateTime.now()
+        );
+
+        if (reservationConfirmed == 0) {
+            return new PaymentConfirmResponseDto(
+                    false,
+                    payment.getPaymentId(),
+                    payment.getStatus().name(),
+                    reservation.getStatus().name(),
+                    "예약 상태가 변경되어 확정할 수 없습니다."
+            );
+        }
+
+        //좌석 확정: HELD -> RESERVED
+        int seatReserved = performanceSeatRepository.updateStatusIfMatch(
+                seatId,
+                PerformanceSeatStatus.HELD,
+                PerformanceSeatStatus.RESERVED
+        );
+
+        if (seatReserved == 0) {
+            markFailAndReleaseSeat(payment, reservation, seatId);
+            return new PaymentConfirmResponseDto(
+                    false,
+                    payment.getPaymentId(),
+                    payment.getStatus().name(),
+                    reservation.getStatus().name(),
+                    "좌석 상태가 변경되어 확정할 수 없습니다."
+            );
+        }
+
+        int paymentSucceeded = paymentRepository.updateStatusIfMatch(
                 payment.getPaymentId(),
                 PaymentStatus.PENDING,
                 PaymentStatus.SUCCESS
         );
 
-        if (pUpdated == 0) {
+        if (paymentSucceeded == 0) {
             boolean paid = payment.getStatus() == PaymentStatus.SUCCESS;
             return new PaymentConfirmResponseDto(
                     paid,
@@ -177,26 +222,11 @@ public class PaymentService {
 
         payment.assignImpUid(info.getImpUid());
 
-        //예약 확정: PENDING -> CONFIRMED
-        reservationRepository.updateStatusIfMatch(
-                reservation.getReservationId(),
-                ReservationStatus.PAYING,
-                ReservationStatus.CONFIRMED,
-                LocalDateTime.now()
-        );
-
-        //좌석 확정: HELD -> RESERVED
-        performanceSeatRepository.updateStatusIfMatch(
-                seatId,
-                PerformanceSeatStatus.HELD,
-                PerformanceSeatStatus.RESERVED
-        );
-
         return new PaymentConfirmResponseDto(
                 true,
                 payment.getPaymentId(),
-                payment.getStatus().name(),
-                reservation.getStatus().name(),
+                PaymentStatus.SUCCESS.name(),
+                ReservationStatus.CONFIRMED.name(),
                 "결제가 완료되었습니다."
         );
     }
