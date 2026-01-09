@@ -41,26 +41,14 @@ public class ReservationExpireScheduler {
                     now
             );
 
-            if (changed == 0) {
-                changed = reservationRepository.updateStatusIfMatch(
-                        reservationId,
-                        ReservationStatus.PAYING,
-                        ReservationStatus.CANCELED,
-                        now
+            if (changed > 0) {
+                Long performanceSeatId = reservation.getPerformanceSeat().getPerformanceSeatId();
+                performanceSeatRepository.updateStatusIfMatch(
+                        performanceSeatId,
+                        PerformanceSeatStatus.HELD,
+                        PerformanceSeatStatus.AVAILABLE
                 );
             }
-
-            if (changed == 0) {
-                continue;
-            }
-
-            Long performanceSeatId = reservation.getPerformanceSeat().getPerformanceSeatId();
-
-            performanceSeatRepository.updateStatusIfMatch(
-                    performanceSeatId,
-                    PerformanceSeatStatus.HELD,
-                    PerformanceSeatStatus.AVAILABLE
-            );
         }
     }
 }
