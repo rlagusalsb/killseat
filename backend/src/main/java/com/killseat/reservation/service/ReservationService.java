@@ -102,7 +102,7 @@ public class ReservationService {
             throw new IllegalStateException("예매 종료 후에는 취소할 수 없습니다.");
         }
 
-        reservation.cancelBeforePayment();
+        reservation.cancelAfterPayment();
 
         performanceSeatRepository.updateStatusIfMatch(
                 reservation.getPerformanceSeat().getPerformanceSeatId(),
