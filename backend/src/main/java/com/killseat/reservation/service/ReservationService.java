@@ -106,7 +106,7 @@ public class ReservationService {
 
         performanceSeatRepository.updateStatusIfMatch(
                 reservation.getPerformanceSeat().getPerformanceSeatId(),
-                PerformanceSeatStatus.HELD,
+                PerformanceSeatStatus.RESERVED,
                 PerformanceSeatStatus.AVAILABLE
         );
 
