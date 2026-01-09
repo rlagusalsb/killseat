@@ -37,16 +37,15 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
                             @Param("to") ReservationStatus to,
                             @Param("now") LocalDateTime now);
 
-    //만료된 PENDING/PAYING 예약 조회
+    //PENDING상태만 만료 처리 대상으로 조회
     @Query("""
         select r
           from Reservation r
           join fetch r.performanceSeat ps
-         where r.status in (com.killseat.reservation.entity.ReservationStatus.PENDING,
-                            com.killseat.reservation.entity.ReservationStatus.PAYING)
+         where r.status = com.killseat.reservation.entity.ReservationStatus.PENDING
            and r.expiresAt < :now
     """)
-    List<Reservation> findExpiredHoldOrPaying(@Param("now") LocalDateTime now);
+    List<Reservation> findExpiredPendingOnly(@Param("now") LocalDateTime now);
 
     @Query(value = """
         select r
