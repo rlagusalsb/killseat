@@ -110,6 +110,7 @@ public class ReservationService {
                 PerformanceSeatStatus.AVAILABLE
         );
 
-        return reservationMapper.toDto(reservation);
+        Reservation detail = reservationRepository.findDetailById(reservationId);
+        return reservationMapper.toDto(detail);
     }
 }
