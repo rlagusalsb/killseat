@@ -50,6 +50,8 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/mypage/**").authenticated()
 
+                        .requestMatchers("/api/reservations/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
