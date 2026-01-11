@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +26,7 @@ public class PerformanceService {
     public List<PerformanceResponseDto> getAll() {
         return performanceRepository.findAll().stream()
                 .map(performanceMapper::toDto)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
