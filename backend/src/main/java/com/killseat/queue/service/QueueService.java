@@ -10,20 +10,38 @@ import org.springframework.stereotype.Service;
 public class QueueService {
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private static final String QUEUE_KEY = "waiting:performance:";
+    private static final String WAITING_KEY = "waiting:performance:";
+    private static final String ACTIVE_KEY = "queue:active:";
 
     //대기열 진입
     public void addQueue(Long performanceId, Long userId) {
-        String key = QUEUE_KEY + performanceId;
+        String waitingKey = WAITING_KEY + performanceId;
+        String activeKey = ACTIVE_KEY + userId;
+
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(activeKey))) {
+            throw new IllegalStateException("이미 입장 허가된 사용자입니다.");
+        }
+
+        Double score = redisTemplate.opsForZSet().score(waitingKey, userId.toString());
+        if (score != null) {
+            throw new IllegalStateException("이미 대기열에 등록되어 있습니다.");
+        }
+
         long now = System.currentTimeMillis();
 
-        redisTemplate.opsForZSet().add(key, userId.toString(), (double) now);
+        redisTemplate.opsForZSet().add(waitingKey, userId.toString(), (double) now);
     }
 
     //현재 순번 조회
     public QueueResponseDto getQueueStatus(Long performanceId, Long userId) {
-        String key = QUEUE_KEY + performanceId;
-        Long rank = redisTemplate.opsForZSet().rank(key, userId.toString());
+        String waitingKey = WAITING_KEY + performanceId;
+        String activeKey = ACTIVE_KEY + userId;
+
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(activeKey))) {
+            return new QueueResponseDto(userId, 0L, "PROCEED");
+        }
+
+        Long rank = redisTemplate.opsForZSet().rank(waitingKey, userId.toString());
 
         if (rank == null) {
             return new QueueResponseDto(userId, 0L, "NOT_FOUND");
