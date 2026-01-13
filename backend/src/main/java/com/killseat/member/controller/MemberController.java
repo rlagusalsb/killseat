@@ -28,6 +28,6 @@ public class MemberController {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.ok(false);
     }
 }
