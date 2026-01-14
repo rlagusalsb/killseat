@@ -11,6 +11,7 @@ import SignUp from "./pages/SignUp";
 import PostWrite from "./pages/PostWrite";
 import PostDetail from "./pages/PostDetail";
 import PostEdit from "./pages/PostEdit";
+import Waiting from "./pages/Waiting";
 import "./css/Common.css";
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
             <Route path="/posts/write" element={<PostWrite />} />
             <Route path="/posts/:postId" element={<PostDetail />} />
             <Route path="/posts/:postId/edit" element={<PostEdit />} />
+            <Route path="/waiting" element={<Waiting />} />
           </Routes>
         </main>
         <Footer />
