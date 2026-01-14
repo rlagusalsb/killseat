@@ -1,5 +1,6 @@
 package com.killseat.queue.scheduler;
 
+import com.killseat.queue.service.QueueNotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,6 +14,7 @@ import java.util.Set;
 public class QueueScheduler {
 
     private final RedisTemplate<String, String> redisTemplate;
+    private final QueueNotificationService queueNotificationService;
     private static final String WAITING_KEY_PATTERN = "waiting:performance:*";
     private static final String ACTIVE_KEY_PREFIX = "queue:active:";
 
@@ -32,8 +34,20 @@ public class QueueScheduler {
             }
 
             for (String userId : waitingUsers) {
+                //입장 권한 부여
                 redisTemplate.opsForValue().set(ACTIVE_KEY_PREFIX + userId, "PROCEED", Duration.ofMinutes(5));
                 redisTemplate.opsForZSet().remove(waitingKey, userId);
+
+                //유저에게 SSE로 실시간 알림 발송
+                queueNotificationService.sendToUser(Long.parseLong(userId), "proceed", "입장 가능");
+
+            }
+
+            Set<String> allWaitingUsers = redisTemplate.opsForZSet().range(waitingKey, 0, -1);
+
+            for (String uid : allWaitingUsers) {
+                Long rank = redisTemplate.opsForZSet().rank(waitingKey, uid);
+                queueNotificationService.sendToUser(Long.parseLong(uid), "update", (rank + 1) + "명 남았습니다.");
             }
         }
     }
