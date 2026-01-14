@@ -23,6 +23,10 @@ export default function Performance() {
       });
   }, []);
 
+  const handleReservation = (performanceId) => {
+    navigate(`/waiting?performanceId=${performanceId}`);
+  };
+
   return (
     <main className="home">
       <section className="page">
@@ -52,16 +56,10 @@ export default function Performance() {
 
                   <div className="performance-info">
                     <h3 className="performance-title">{p.title}</h3>
-
                     <p className="performance-meta">
                       {new Date(p.startTime).toLocaleString()}
                     </p>
-
-                    <p
-                      className={`performance-status ${
-                        isOpen ? "open" : "closed"
-                      }`}
-                    >
+                    <p className={`performance-status ${isOpen ? "open" : "closed"}`}>
                       {isOpen ? "예매 가능" : "예매 마감"}
                     </p>
                   </div>
@@ -69,9 +67,7 @@ export default function Performance() {
                   <button
                     className="action-button"
                     disabled={!isOpen}
-                    onClick={() =>
-                      navigate(`/performances/${p.performanceId}/seats`)
-                    }
+                    onClick={() => handleReservation(p.performanceId)}
                   >
                     예약하기
                   </button>
