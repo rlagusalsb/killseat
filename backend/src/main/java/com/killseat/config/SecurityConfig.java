@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/auth/**", "/api/members/**", "/api/performances/**", "/api/performance-seats/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/members/**", "/api/performances/**", "/api/queue/subscribe/**").permitAll()
                         .requestMatchers(POST, "/api/payments/confirm").permitAll()
 
                         .requestMatchers(GET, "/api/posts/**").permitAll()
@@ -52,6 +52,10 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/reservations/**").authenticated()
 
+                        .requestMatchers("/api/performance-seats/**").authenticated()
+
+                        .requestMatchers("/api/queue/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -64,8 +68,9 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("http://localhost:5173"));
         config.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization","Content-Type"));
-        config.setAllowCredentials(false);
+        config.setAllowedHeaders(List.of("Authorization","Content-Type","Cache-Control","Connection"));
+        config.setAllowCredentials(true);
+        config.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
