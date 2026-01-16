@@ -15,8 +15,9 @@ export default function PerformanceSeats() {
   const [selectedSeatId, setSelectedSeatId] = useState(null);
 
   useEffect(() => {
-    if (window.IMP) {
-      window.IMP.init("imp81861316");
+    const impCode = import.meta.env.VITE_IMP_CODE;
+    if (window.IMP && impCode) {
+      window.IMP.init(impCode);
     }
   }, []);
 
@@ -49,23 +50,18 @@ export default function PerformanceSeats() {
     return [...seats].sort((a, b) => {
       const pa = parse(a.seatNumber);
       const pb = parse(b.seatNumber);
-
       if (!pa && !pb) return 0;
       if (!pa) return 1;
       if (!pb) return -1;
-
       const rowCmp = pa.row.localeCompare(pb.row);
       if (rowCmp !== 0) return rowCmp;
-
       return pa.col - pb.col;
     });
   }, [seats]);
 
   const selectedSeat = useMemo(() => {
     if (!selectedSeatId) return null;
-    return (
-      sortedSeats.find((s) => s.performanceSeatId === selectedSeatId) || null
-    );
+    return sortedSeats.find((s) => s.performanceSeatId === selectedSeatId) || null;
   }, [selectedSeatId, sortedSeats]);
 
   const isAvailable = (seat) => seat.status === "AVAILABLE";
@@ -91,59 +87,51 @@ export default function PerformanceSeats() {
     if (!ok) return;
 
     if (!window.IMP) {
-      alert("PortOne SDK가 로드되지 않았습니다.");
+      alert("포트원 라이브러리가 로드되지 않았습니다.");
       return;
     }
 
     setPaying(true);
-
     let reservationId = null;
     let preparedMerchantUid = null;
 
     try {
-      const reservationRes = await api.post(
-        `/api/reservations/${selectedSeatId}`
-      );
-
-      reservationId =
-        reservationRes.data?.reservationId ?? reservationRes.data?.id;
-      if (!reservationId) throw new Error("reservationId 없음");
+      const reservationRes = await api.post(`/api/reservations/${selectedSeatId}`);
+      reservationId = reservationRes.data?.reservationId ?? reservationRes.data?.id;
+      
+      if (!reservationId) throw new Error("예약 ID 생성 실패");
 
       const prepareRes = await api.post("/api/payments/prepare", {
         reservationId,
         method: "CARD",
       });
 
-      preparedMerchantUid =
-        prepareRes.data?.merchantUid ?? prepareRes.data?.merchant_uid;
-
+      preparedMerchantUid = prepareRes.data?.merchantUid ?? prepareRes.data?.merchant_uid;
       const amount = prepareRes.data?.amount;
-      const name = prepareRes.data?.name ?? performance?.title ?? "Killseat 결제";
+      const name = prepareRes.data?.name ?? performance?.title ?? "공연 티켓 결제";
 
       if (!preparedMerchantUid || typeof amount !== "number") {
-        throw new Error("결제 준비 데이터 오류");
+        throw new Error("결제 준비 데이터가 올바르지 않습니다.");
       }
 
-      const IMP = window.IMP;
+      const userInfo = JSON.parse(localStorage.getItem("user") || "{}");
 
-      IMP.request_pay(
+      window.IMP.request_pay(
         {
           pg: "kakaopay.TC0ONETIME",
           pay_method: "card",
           merchant_uid: preparedMerchantUid,
           name,
           amount,
-          buyer_email: "test@test.com",
-          buyer_name: "테스터",
-          buyer_tel: "01012341234",
+          buyer_email: userInfo.email || "",
+          buyer_name: userInfo.name || "구매자",
+          buyer_tel: userInfo.phone || "",
         },
         async (rsp) => {
           try {
             if (!rsp?.success) {
-              if (reservationId) {
-                await api.delete(`/api/reservations/${reservationId}`);
-              }
-              alert("결제가 취소되었습니다.");
+              if (reservationId) await api.delete(`/api/reservations/${reservationId}`);
+              alert(rsp?.error_msg || "결제가 취소되었습니다.");
               setPaying(false);
               return;
             }
@@ -155,8 +143,9 @@ export default function PerformanceSeats() {
 
             alert("결제가 완료되었습니다.");
             navigate("/my-reservations");
-          } catch {
-            alert("결제 오류가 발생했습니다.");
+          } catch (e) {
+            console.error(e);
+            alert("결제 검증 중 오류가 발생했습니다.");
           } finally {
             setPaying(false);
           }
@@ -166,7 +155,8 @@ export default function PerformanceSeats() {
       if (reservationId) {
         await api.delete(`/api/reservations/${reservationId}`).catch(() => {});
       }
-      console.error("결제 준비 오류:", err.response?.data);
+      console.error("Payment Error:", err.response?.data || err.message);
+      alert("결제 준비 중 오류가 발생했습니다.");
       setPaying(false);
     }
   };
@@ -174,7 +164,7 @@ export default function PerformanceSeats() {
   if (loading) {
     return (
       <main className="seat-page">
-        <p className="seat-helper">불러오는 중...</p>
+        <p className="seat-helper">좌석 상태를 불러오는 중...</p>
       </main>
     );
   }
@@ -183,9 +173,7 @@ export default function PerformanceSeats() {
     return (
       <main className="seat-page">
         <p className="seat-helper seat-error">{error}</p>
-        <button className="seat-back" onClick={() => navigate(-1)}>
-          뒤로가기
-        </button>
+        <button className="seat-back" onClick={() => navigate(-1)}>뒤로가기</button>
       </main>
     );
   }
@@ -197,18 +185,13 @@ export default function PerformanceSeats() {
           <img
             className="seat-thumbnail"
             src={performance?.thumbnailUrl || "/placeholder.jpg"}
-            alt={performance?.title || "performance"}
-            onError={(e) => {
-              e.currentTarget.src = "/placeholder.jpg";
-            }}
+            alt="performance"
+            onError={(e) => { e.currentTarget.src = "/placeholder.jpg"; }}
           />
-
           <div className="seat-header-info">
             <h1 className="seat-title">{performance?.title}</h1>
             <p className="seat-meta">
-              {performance?.startTime
-                ? new Date(performance.startTime).toLocaleString()
-                : "-"}
+              {performance?.startTime ? new Date(performance.startTime).toLocaleString() : "-"}
               {" · "}
               <span className="seat-price">{formatPrice(performance?.price)}</span>
             </p>
@@ -221,13 +204,10 @@ export default function PerformanceSeats() {
           {sortedSeats.map((s) => {
             const available = isAvailable(s);
             const selected = selectedSeatId === s.performanceSeatId;
-
             return (
               <button
                 key={s.performanceSeatId}
-                className={`seat-item ${available ? "available" : "reserved"} ${
-                  selected ? "selected" : ""
-                }`}
+                className={`seat-item ${available ? "available" : "reserved"} ${selected ? "selected" : ""}`}
                 disabled={!available || paying}
                 onClick={() => onClickSeat(s)}
               >
@@ -240,26 +220,12 @@ export default function PerformanceSeats() {
         <footer className="seat-footer">
           <div className="seat-summary">
             <span className="seat-summary-label">선택 좌석</span>
-            <span className="seat-summary-value">
-              {selectedSeat ? selectedSeat.seatNumber : "-"}
-            </span>
+            <span className="seat-summary-value">{selectedSeat ? selectedSeat.seatNumber : "-"}</span>
           </div>
-
           <div className="seat-actions">
-            <button
-              className="seat-back"
-              onClick={() => navigate(-1)}
-              disabled={paying}
-            >
-              공연 목록
-            </button>
-
-            <button
-              className="seat-pay"
-              disabled={!selectedSeatId || paying}
-              onClick={onPay}
-            >
-              {paying ? "결제 진행중..." : "결제하기"}
+            <button className="seat-back" onClick={() => navigate(-1)} disabled={paying}>공연 목록</button>
+            <button className="seat-pay" disabled={!selectedSeatId || paying} onClick={onPay}>
+              {paying ? "결제 진행 중..." : "결제하기"}
             </button>
           </div>
         </footer>
