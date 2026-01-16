@@ -38,6 +38,11 @@ public enum CustomErrorCode {
     SEAT_NOT_FOUND(HttpStatus.NOT_FOUND, "S001", "좌석 정보를 찾을 수 없습니다."),
     SEAT_ALREADY_OCCUPIED(HttpStatus.CONFLICT, "S002", "이미 선택되었거나 사용 중인 좌석입니다."),
 
+    //대기열 관련 (Q)
+    ALREADY_ACTIVATED_USER(HttpStatus.BAD_REQUEST, "Q001", "이미 입장 허가된 사용자입니다."),
+    ALREADY_IN_WAITING_QUEUE(HttpStatus.BAD_REQUEST, "Q002", "이미 대기열에 등록되어 있습니다."),
+    QUEUE_NOT_FOUND(HttpStatus.NOT_FOUND, "Q003", "대기열 정보를 찾을 수 없습니다."),
+
     //공통 에러 (G)
     MISSING_PARAMETER(HttpStatus.BAD_REQUEST, "G001", "필수 요청 파라미터가 누락되었습니다."),
     INVALID_INPUT_FORMAT(HttpStatus.BAD_REQUEST, "G002", "입력 형식이 올바르지 않습니다."),
