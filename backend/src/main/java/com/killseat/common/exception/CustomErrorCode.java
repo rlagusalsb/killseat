@@ -41,7 +41,8 @@ public enum CustomErrorCode {
     //공통 에러 (G)
     MISSING_PARAMETER(HttpStatus.BAD_REQUEST, "G001", "필수 요청 파라미터가 누락되었습니다."),
     INVALID_INPUT_FORMAT(HttpStatus.BAD_REQUEST, "G002", "입력 형식이 올바르지 않습니다."),
-    REJECTED_PERMISSION(HttpStatus.BAD_REQUEST, "G003", "허용되지 않은 요청입니다.");
+    REJECTED_PERMISSION(HttpStatus.BAD_REQUEST, "G003", "허용되지 않은 요청입니다."),
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "G500", "서버 내부 오류가 발생했습니다.");
 
     private final HttpStatus status;
     private final String errorCode;
