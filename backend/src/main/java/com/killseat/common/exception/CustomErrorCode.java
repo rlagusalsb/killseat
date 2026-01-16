@@ -28,8 +28,7 @@ public enum CustomErrorCode {
     INVALID_PAYMENT_STATUS(HttpStatus.BAD_REQUEST, "PAY002", "결제 가능한 상태가 아닙니다."),
     PAYMENT_VERIFICATION_FAILED(HttpStatus.BAD_REQUEST, "PAY003", "결제 금액 검증에 실패했습니다."),
     SEAT_OCCUPANCY_EXPIRED(HttpStatus.GONE, "PAY004", "좌석 선점 시간이 만료되었습니다."),
-    RESERVATION_NOT_FOUND(HttpStatus.NOT_FOUND, "PAY005", "예약 정보를 찾을 수 없습니다."),
-    ALREADY_PROCESSED_PAYMENT(HttpStatus.CONFLICT, "PAY006", "이미 처리된 결제 건입니다."),
+    ALREADY_PROCESSED_PAYMENT(HttpStatus.CONFLICT, "PAY005", "이미 처리된 결제 건입니다."),
 
     //공연 관련 (PER)
     PERFORMANCE_NOT_FOUND(HttpStatus.NOT_FOUND, "PER001", "해당 공연 정보를 찾을 수 없습니다."),
@@ -42,6 +41,13 @@ public enum CustomErrorCode {
     ALREADY_ACTIVATED_USER(HttpStatus.BAD_REQUEST, "Q001", "이미 입장 허가된 사용자입니다."),
     ALREADY_IN_WAITING_QUEUE(HttpStatus.BAD_REQUEST, "Q002", "이미 대기열에 등록되어 있습니다."),
     QUEUE_NOT_FOUND(HttpStatus.NOT_FOUND, "Q003", "대기열 정보를 찾을 수 없습니다."),
+
+    //예약 및 예매 관련 (R)
+    RESERVATION_NOT_FOUND(HttpStatus.NOT_FOUND, "R001", "예약 정보를 찾을 수 없습니다."),
+    INVALID_RESERVATION_STATUS(HttpStatus.BAD_REQUEST, "R002", "현재 상태에서는 예약 처리가 불가능합니다."),
+    PERFORMANCE_NOT_OPEN(HttpStatus.BAD_REQUEST, "R003", "공연 예매 기간이 아닙니다."),
+    SEAT_ALREADY_HELD(HttpStatus.CONFLICT, "R004", "이미 다른 사용자가 선점 중인 좌석입니다."),
+    CANNOT_CANCEL_AFTER_CLOSE(HttpStatus.BAD_REQUEST, "R005", "예매 종료 후에는 취소를 할 수 없습니다."),
 
     //공통 에러 (G)
     MISSING_PARAMETER(HttpStatus.BAD_REQUEST, "G001", "필수 요청 파라미터가 누락되었습니다."),
