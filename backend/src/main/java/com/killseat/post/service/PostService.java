@@ -1,5 +1,7 @@
 package com.killseat.post.service;
 
+import com.killseat.common.exception.CustomErrorCode;
+import com.killseat.common.exception.CustomException;
 import com.killseat.member.entity.Member;
 import com.killseat.member.repository.MemberRepository;
 import com.killseat.post.dto.PostRequestDto;
@@ -43,7 +45,7 @@ public class PostService {
         validatePostId(postId);
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.POST_NOT_FOUND));
 
         return postMapper.toDto(post);
     }
@@ -54,7 +56,7 @@ public class PostService {
         validatePostReq(request);
 
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_EXIST));
 
         Post saved = postRepository.save(postMapper.toEntity(request, member));
         return postMapper.toDto(saved);
@@ -67,10 +69,10 @@ public class PostService {
         validatePostReq(request);
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.POST_NOT_FOUND));
 
         if (!(post.getMember().getMemberId().equals(memberId))) {
-            throw new AccessDeniedException("수정 권한이 없습니다.");
+            throw new CustomException(CustomErrorCode.REJECTED_PERMISSION);
         }
 
         post.update(request.getTitle().trim(), request.getContent().trim());
@@ -83,10 +85,10 @@ public class PostService {
         validateMemberId(memberId);
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.POST_NOT_FOUND));
 
         if (!(post.getMember().getMemberId().equals(memberId))) {
-            throw new AccessDeniedException("삭제 권한이 없습니다.");
+            throw new CustomException(CustomErrorCode.REJECTED_PERMISSION);
         }
 
         postRepository.delete(post);
@@ -94,31 +96,28 @@ public class PostService {
 
     private void validatePostId(Long postId) {
         if ((postId == null)) {
-            throw new IllegalArgumentException("게시글 ID가 필요합니다.");
+            throw new CustomException(CustomErrorCode.MISSING_PARAMETER);
         }
     }
 
     private void validateMemberId(Long memberId) {
         if ((memberId == null)) {
-            throw new IllegalArgumentException("로그인이 필요합니다.");
+            throw new CustomException(CustomErrorCode.TOKEN_NOT_VALID);
         }
     }
 
     private void validatePostReq(PostRequestDto req) {
-        if ((req == null)) {
-            throw new IllegalArgumentException("요청 본문이 필요합니다.");
+        if (req == null) {
+            throw new CustomException(CustomErrorCode.MISSING_PARAMETER);
         }
 
-        if ((req.getTitle() == null) || (req.getTitle().isBlank())) {
-            throw new IllegalArgumentException("제목은 필수입니다.");
+        if (req.getTitle() == null || req.getTitle().isBlank() ||
+                req.getContent() == null || req.getContent().isBlank()) {
+            throw new CustomException(CustomErrorCode.MISSING_PARAMETER);
         }
 
-        if ((req.getContent() == null) || (req.getContent().isBlank())) {
-            throw new IllegalArgumentException("내용은 필수입니다.");
-        }
-
-        if ((req.getTitle().length() > 100)) {
-            throw new IllegalArgumentException("제목은 100자 이하여야 합니다.");
+        if (req.getTitle().length() > 100) {
+            throw new CustomException(CustomErrorCode.INVALID_INPUT_FORMAT);
         }
     }
 }
