@@ -1,5 +1,7 @@
 package com.killseat.payment.service;
 
+import com.killseat.common.exception.CustomErrorCode;
+import com.killseat.common.exception.CustomException;
 import com.killseat.payment.PortOneClient;
 import com.killseat.payment.dto.*;
 import com.killseat.payment.entity.Payment;
@@ -33,11 +35,11 @@ public class PaymentService {
         Reservation reservation = reservationRepository.findForPaymentPrepare(request.getReservationId());
 
         if (reservation == null) {
-            throw new EntityNotFoundException("예약을 찾을 수 없습니다.");
+            throw new CustomException(CustomErrorCode.RESERVATION_NOT_FOUND);
         }
 
         if (reservation.getStatus() != ReservationStatus.PENDING) {
-            throw new IllegalStateException("결제 준비가 가능한 예약 상태가 아닙니다.");
+            throw new CustomException(CustomErrorCode.INVALID_PAYMENT_STATUS);
         }
 
         int changedReservationStatus = reservationRepository.updateStatusIfMatch(
@@ -48,7 +50,7 @@ public class PaymentService {
         );
 
         if (changedReservationStatus == 0) {
-            throw new IllegalStateException("이미 결제 진행 중이거나 상태가 변경되었습니다.");
+            throw new CustomException(CustomErrorCode.ALREADY_PROCESSED_PAYMENT);
         }
 
         Long expectedAmount = calculateExpectedAmount(reservation);
@@ -80,7 +82,7 @@ public class PaymentService {
     @Transactional
     public PaymentConfirmResponseDto confirm(PaymentConfirmRequestDto request) {
         Payment payment = paymentRepository.findByMerchantUid(request.getMerchantUid())
-                .orElseThrow(() -> new EntityNotFoundException("결제 요청을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
 
         Reservation reservation = payment.getReservation();
         Long seatId = reservation.getPerformanceSeat().getPerformanceSeatId();
@@ -127,12 +129,13 @@ public class PaymentService {
     @Transactional
     public PaymentCancelResponseDto cancel(PaymentCancelRequestDto request, Long memberId) {
         Payment payment = paymentRepository.findById(request.getPaymentId())
-                .orElseThrow(() -> new EntityNotFoundException("결제를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
+
 
         Reservation reservation = payment.getReservation();
 
         if (!reservation.getMember().getMemberId().equals(memberId)) {
-            throw new IllegalStateException("본인 결제만 취소할 수 있습니다.");
+            throw new CustomException(CustomErrorCode.REJECTED_PERMISSION);
         }
 
         if (payment.getStatus() == PaymentStatus.CANCELED) {
