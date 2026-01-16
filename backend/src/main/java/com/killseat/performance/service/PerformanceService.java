@@ -1,5 +1,7 @@
 package com.killseat.performance.service;
 
+import com.killseat.common.exception.CustomErrorCode;
+import com.killseat.common.exception.CustomException;
 import com.killseat.performance.dto.PerformanceRequestDto;
 import com.killseat.performance.dto.PerformanceResponseDto;
 import com.killseat.performance.entity.Performance;
@@ -32,7 +34,7 @@ public class PerformanceService {
     @Transactional(readOnly = true)
     public PerformanceResponseDto getOne(Long id) {
         Performance performance = performanceRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 공연을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PERFORMANCE_NOT_FOUND));
         return performanceMapper.toDto(performance);
     }
 
@@ -48,7 +50,7 @@ public class PerformanceService {
     @Transactional
     public PerformanceResponseDto update(Long id, PerformanceRequestDto request) {
         Performance performance = performanceRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 공연을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PERFORMANCE_NOT_FOUND));
         performance.update(request.getTitle(), request.getPrice(), request.getStartTime(), request.getEndTime());
         return performanceMapper.toDto(performance);
     }
