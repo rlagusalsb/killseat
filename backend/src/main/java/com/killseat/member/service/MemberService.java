@@ -1,5 +1,7 @@
 package com.killseat.member.service;
 
+import com.killseat.common.exception.CustomErrorCode;
+import com.killseat.common.exception.CustomException;
 import com.killseat.member.dto.SignupRequestDto;
 import com.killseat.member.entity.Member;
 import com.killseat.member.entity.Role;
@@ -24,7 +26,7 @@ public class MemberService {
     @Transactional
     public void signup(SignupRequestDto request) {
         if (checkEmailDuplicate(request.getEmail())) {
-            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+            throw new CustomException(CustomErrorCode.DUPLICATE_EMAIL);
         }
 
         Member member = Member.builder()
