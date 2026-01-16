@@ -6,6 +6,8 @@ import com.killseat.comment.dto.CommentUpdateRequestDto;
 import com.killseat.comment.entity.Comment;
 import com.killseat.comment.repository.CommentRepository;
 import com.killseat.comment.service.mapper.CommentMapper;
+import com.killseat.common.exception.CustomErrorCode;
+import com.killseat.common.exception.CustomException;
 import com.killseat.member.entity.Member;
 import com.killseat.member.repository.MemberRepository;
 import com.killseat.post.entity.Post;
@@ -46,19 +48,19 @@ public class CommentService {
         validateCreateReq(request);
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.POST_NOT_FOUND));
 
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_EXIST));
 
         Comment parent = null;
 
         if ((request.getParentId() != null)) {
             parent = commentRepository.findById(request.getParentId())
-                    .orElseThrow(() -> new IllegalArgumentException("부모 댓글을 찾을 수 없습니다."));
+                    .orElseThrow(() -> new CustomException(CustomErrorCode.PARENT_COMMENT_NOT_FOUND));
 
             if (!(parent.getPost().getPostId().equals(postId))) {
-                throw new IllegalArgumentException("부모 댓글이 해당 게시글에 속하지 않습니다.");
+                throw new CustomException(CustomErrorCode.PARENT_COMMENT_NOT_MATCH);
             }
         }
 
@@ -82,10 +84,10 @@ public class CommentService {
         validateUpdateReq(request);
 
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.COMMENT_NOT_FOUND));
 
         if (!(comment.getMember().getMemberId().equals(memberId))) {
-            throw new AccessDeniedException("댓글 수정 권한이 없습니다.");
+            throw new CustomException(CustomErrorCode.ACCESS_DENIED_COMMENT);
         }
 
         comment.update(request.getContent().trim());
@@ -98,10 +100,10 @@ public class CommentService {
         validateMemberId(memberId);
 
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.COMMENT_NOT_FOUND));
 
         if (!(comment.getMember().getMemberId().equals(memberId))) {
-            throw new AccessDeniedException("댓글 삭제 권한이 없습니다.");
+            throw new CustomException(CustomErrorCode.ACCESS_DENIED_COMMENT);
         }
 
         commentRepository.delete(comment);
@@ -109,47 +111,39 @@ public class CommentService {
 
     private void validatePostId(Long postId) {
         if ((postId == null)) {
-            throw new IllegalArgumentException("게시글 ID가 필요합니다.");
+            throw new CustomException(CustomErrorCode.MISSING_PARAMETER);
         }
     }
 
     private void validateCommentId(Long commentId) {
         if ((commentId == null)) {
-            throw new IllegalArgumentException("댓글 ID가 필요합니다.");
+            throw new CustomException(CustomErrorCode.MISSING_PARAMETER);
         }
     }
 
     private void validateMemberId(Long memberId) {
         if ((memberId == null)) {
-            throw new IllegalArgumentException("로그인이 필요합니다.");
+            throw new CustomException(CustomErrorCode.TOKEN_NOT_VALID);
         }
     }
 
     private void validateCreateReq(CommentCreateRequestDto req) {
-        if ((req == null)) {
-            throw new IllegalArgumentException("요청 본문이 필요합니다.");
-        }
-
-        if ((req.getContent() == null) || (req.getContent().isBlank())) {
-            throw new IllegalArgumentException("댓글 내용은 필수입니다.");
+        if (req == null || req.getContent() == null || req.getContent().isBlank()) {
+            throw new CustomException(CustomErrorCode.MISSING_PARAMETER);
         }
 
         if ((req.getContent().length() > 500)) {
-            throw new IllegalArgumentException("댓글은 500자 이하여야 합니다.");
+            throw new CustomException(CustomErrorCode.INVALID_INPUT_FORMAT);
         }
     }
 
     private void validateUpdateReq(CommentUpdateRequestDto req) {
-        if ((req == null)) {
-            throw new IllegalArgumentException("요청 본문이 필요합니다.");
+        if (req == null || req.getContent() == null || req.getContent().isBlank()) {
+            throw new CustomException(CustomErrorCode.MISSING_PARAMETER);
         }
 
-        if ((req.getContent() == null) || (req.getContent().isBlank())) {
-            throw new IllegalArgumentException("댓글 내용은 필수입니다.");
-        }
-
-        if ((req.getContent().length() > 500)) {
-            throw new IllegalArgumentException("댓글은 500자 이하여야 합니다.");
+        if (req.getContent().length() > 500) {
+            throw new CustomException(CustomErrorCode.INVALID_INPUT_FORMAT);
         }
     }
 }
