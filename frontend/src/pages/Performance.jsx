@@ -1,7 +1,7 @@
 import "../css/Performance.css";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api/client";
 
 export default function Performance() {
   const [performances, setPerformances] = useState([]);
@@ -10,13 +10,13 @@ export default function Performance() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios
-      .get("/api/performances")
+    api.get("/api/performances")
       .then((res) => {
         setPerformances(Array.isArray(res.data) ? res.data : []);
       })
-      .catch(() => {
+      .catch((err) => {
         setError("공연 목록을 불러오지 못했습니다.");
+        console.error("공연 목록 로딩 에러:", err.response?.data);
       })
       .finally(() => {
         setLoading(false);
@@ -41,7 +41,6 @@ export default function Performance() {
           <div className="performance-list">
             {performances.map((p) => {
               const isOpen = p.status === "OPEN";
-
               return (
                 <article key={p.performanceId} className="performance-card">
                   <img
@@ -49,11 +48,8 @@ export default function Performance() {
                     src={p.thumbnailUrl || "/placeholder.jpg"}
                     alt={p.title}
                     loading="lazy"
-                    onError={(e) => {
-                      e.currentTarget.src = "/placeholder.jpg";
-                    }}
+                    onError={(e) => { e.currentTarget.src = "/placeholder.jpg"; }}
                   />
-
                   <div className="performance-info">
                     <h3 className="performance-title">{p.title}</h3>
                     <p className="performance-meta">
@@ -63,7 +59,6 @@ export default function Performance() {
                       {isOpen ? "예매 가능" : "예매 마감"}
                     </p>
                   </div>
-
                   <button
                     className="action-button"
                     disabled={!isOpen}
@@ -74,10 +69,7 @@ export default function Performance() {
                 </article>
               );
             })}
-
-            {performances.length === 0 && (
-              <p className="helper-text">등록된 공연이 없습니다.</p>
-            )}
+            {performances.length === 0 && <p className="helper-text">등록된 공연이 없습니다.</p>}
           </div>
         )}
       </section>

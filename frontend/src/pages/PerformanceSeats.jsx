@@ -162,15 +162,11 @@ export default function PerformanceSeats() {
           }
         }
       );
-    } catch {
+    } catch (err) {
       if (reservationId) {
-        try {
-          await api.delete(`/api/reservations/${reservationId}`);
-        } catch {
-          alert("새로고침 후 다시 시도하세요.");
-        }
+        await api.delete(`/api/reservations/${reservationId}`).catch(() => {});
       }
-      alert("결제 진행 중 오류가 발생했습니다.");
+      console.error("결제 준비 오류:", err.response?.data);
       setPaying(false);
     }
   };

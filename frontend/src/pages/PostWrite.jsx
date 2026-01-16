@@ -12,24 +12,24 @@ export default function PostWrite() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const canSubmit = (title.trim().length > 0) && (content.trim().length > 0) && (!loading);
+  const canSubmit = 
+    title.trim().length > 0 && 
+    content.trim().length > 0 && 
+    !loading;
 
   const onSubmit = async (e) => {
     e.preventDefault();
-
     setError("");
 
-    if ((title == null) || (title.trim() === "")) {
+    if (!title.trim()) {
       setError("제목은 필수입니다.");
       return;
     }
-
-    if ((content == null) || (content.trim() === "")) {
+    if (!content.trim()) {
       setError("내용은 필수입니다.");
       return;
     }
-
-    if ((title.trim().length > 100)) {
+    if (title.trim().length > 100) {
       setError("제목은 100자 이하여야 합니다.");
       return;
     }
@@ -42,17 +42,13 @@ export default function PostWrite() {
       });
 
       const postId = res?.data?.postId;
-      if ((postId != null)) {
+      if (postId) {
         navigate(`/posts/${postId}`);
       } else {
         navigate("/board");
       }
-    } catch (e2) {
-      setError(
-        e2?.response?.data?.message ||
-          e2?.message ||
-          "게시글 작성에 실패했습니다."
-      );
+    } catch (err) {
+      console.error("게시글 작성 에러:", err.response?.data);
     } finally {
       setLoading(false);
     }
@@ -80,6 +76,7 @@ export default function PostWrite() {
               onChange={(e) => setTitle(e.target.value)}
               maxLength={100}
               placeholder="제목을 입력하세요 (최대 100자)"
+              disabled={loading}
             />
             <div className="postwrite-hint">
               <span>{title.trim().length}</span> / 100
@@ -97,6 +94,7 @@ export default function PostWrite() {
               onChange={(e) => setContent(e.target.value)}
               placeholder="내용을 입력하세요"
               rows={10}
+              disabled={loading}
             />
             <div className="postwrite-hint">
               공백 제외 <span>{content.trim().length}</span>자
@@ -113,7 +111,11 @@ export default function PostWrite() {
               취소
             </button>
 
-            <button className="postwrite-btn" type="submit" disabled={!canSubmit}>
+            <button 
+              className="postwrite-btn" 
+              type="submit" 
+              disabled={!canSubmit}
+            >
               {loading ? "등록 중..." : "등록"}
             </button>
           </div>

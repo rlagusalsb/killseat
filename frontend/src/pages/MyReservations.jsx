@@ -26,7 +26,7 @@ export default function MyReservations() {
       const res = await api.get("/api/mypage/reservations");
       setReservations(res.data.content || res.data || []);
     } catch (e) {
-      console.error(e);
+      console.error("예약 목록 조회 에러:", e.response?.data);
       setReservations([]);
     } finally {
       setLoading(false);
@@ -41,9 +41,7 @@ export default function MyReservations() {
       alert("정상적으로 취소되었습니다.");
       fetchReservations();
     } catch (e) {
-      console.error(e);
-      const msg = e.response?.data?.message || "취소 중 오류가 발생했습니다.";
-      alert(msg);
+      console.error("예약 취소 에러:", e.response?.data);
     }
   };
 
@@ -64,7 +62,7 @@ export default function MyReservations() {
         <div className="myresv-list">
           {reservations.map((r) => (
             <div key={r.reservationId} className="myresv-card">
-              <img className="myresv-thumb" src={r.performanceThumbnailUrl} alt="" />
+              <img className="myresv-thumb" src={r.performanceThumbnailUrl || "/placeholder.jpg"} alt="" />
               <div className="myresv-body">
                 <div className="myresv-row">
                   <h4 className="myresv-perf">{r.performanceTitle}</h4>

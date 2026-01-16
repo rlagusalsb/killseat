@@ -126,12 +126,8 @@ export default function PostDetail() {
       });
       resetComposer();
       await fetchComments();
-    } catch (e2) {
-      alert(
-        e2?.response?.data?.message ||
-          e2?.message ||
-          "댓글 작성에 실패했습니다."
-      );
+    } catch (err) {
+      console.error("댓글 작성 에러:", err.response?.data);
     } finally {
       setSubmitting(false);
     }

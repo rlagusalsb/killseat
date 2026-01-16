@@ -84,12 +84,8 @@ export default function PostEdit() {
       });
 
       navigate(`/posts/${postId}`);
-    } catch (e2) {
-      setError(
-        e2?.response?.data?.message ||
-          e2?.message ||
-          "게시글 수정에 실패했습니다."
-      );
+    } catch (err) {
+      console.error("게시글 수정 에러:", err.response?.data);
     } finally {
       setLoading(false);
     }

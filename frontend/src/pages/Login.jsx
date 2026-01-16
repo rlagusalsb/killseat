@@ -13,13 +13,20 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     try {
       const res = await api.post("/api/auth/login", { email, password });
+
       token.setAccess(res.data.accessToken);
       token.setRefresh(res.data.refreshToken);
+
+      if (res.data.role) {
+        localStorage.setItem("role", res.data.role);
+      }
+
       navigate("/");
     } catch (err) {
-      alert(err.response?.data?.message || "로그인 실패");
+      console.error(err.response?.data);
     } finally {
       setLoading(false);
     }
@@ -30,12 +37,14 @@ export default function Login() {
       <h2>로그인</h2>
       <form className="login-form" onSubmit={handleSubmit}>
         <div className="input-group">
-          <label htmlFor="email">아이디</label>
+          <label htmlFor="email">아이디(이메일)</label>
           <input
             id="email"
+            type="text"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="username"
+            required
           />
         </div>
         <div className="input-group">
@@ -46,6 +55,7 @@ export default function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
+            required
           />
         </div>
         <button type="submit" className="login-button" disabled={loading}>

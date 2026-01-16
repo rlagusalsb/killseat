@@ -33,10 +33,11 @@ export default function Board() {
 
       setPosts(res.data.content || []);
       setTotalPages(res.data.totalPages ?? 0);
-    } catch {
+    } catch (err) {
       setFailed(true);
       setPosts([]);
       setTotalPages(0);
+      console.error("게시글 로딩 에러:", err.response?.data);
     } finally {
       setLoading(false);
     }
