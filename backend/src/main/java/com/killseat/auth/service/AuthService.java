@@ -11,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
@@ -34,10 +35,15 @@ public class AuthService {
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
+            String role = userDetails.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .findFirst()
+                    .orElse("ROLE_USER");
+
             String accessToken = jwtUtil.generateAccessToken(userDetails);
             String refreshToken = jwtUtil.generateRefreshToken(userDetails);
 
-            return new TokenResponseDto(accessToken, refreshToken);
+            return new TokenResponseDto(accessToken, refreshToken, role);
         } catch (AuthenticationException e) {
             throw new CustomException(CustomErrorCode.MEMBER_NOT_EXIST);
         }
@@ -59,8 +65,13 @@ public class AuthService {
             throw new CustomException(CustomErrorCode.MEMBER_NOT_EXIST);
         }
 
+        String role = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .orElse("ROLE_USER");
+
         String newAccessToken = jwtUtil.generateAccessToken(userDetails);
 
-        return new TokenResponseDto(newAccessToken, refreshToken);
+        return new TokenResponseDto(newAccessToken, refreshToken, role);
     }
 }
