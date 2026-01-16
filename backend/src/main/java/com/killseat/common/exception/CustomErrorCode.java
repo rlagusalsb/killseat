@@ -31,6 +31,9 @@ public enum CustomErrorCode {
     RESERVATION_NOT_FOUND(HttpStatus.NOT_FOUND, "PAY005", "예약 정보를 찾을 수 없습니다."),
     ALREADY_PROCESSED_PAYMENT(HttpStatus.CONFLICT, "PAY006", "이미 처리된 결제 건입니다."),
 
+    //공연 관련 (PER)
+    PERFORMANCE_NOT_FOUND(HttpStatus.NOT_FOUND, "PER001", "해당 공연 정보를 찾을 수 없습니다."),
+
     //공통 에러 (G)
     MISSING_PARAMETER(HttpStatus.BAD_REQUEST, "G001", "필수 요청 파라미터가 누락되었습니다."),
     INVALID_INPUT_FORMAT(HttpStatus.BAD_REQUEST, "G002", "입력 형식이 올바르지 않습니다."),
