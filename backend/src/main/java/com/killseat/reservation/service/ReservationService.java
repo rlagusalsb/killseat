@@ -1,5 +1,7 @@
 package com.killseat.reservation.service;
 
+import com.killseat.common.exception.CustomErrorCode;
+import com.killseat.common.exception.CustomException;
 import com.killseat.member.entity.Member;
 import com.killseat.member.repository.MemberRepository;
 import com.killseat.mypage.dto.MyPageReservationDto;
@@ -45,10 +47,10 @@ public class ReservationService {
     @Transactional
     public ReservationResponseDto reserveSeat(Long performanceSeatId, Long memberId) {
         PerformanceSeat seat = performanceSeatRepository.findById(performanceSeatId)
-                .orElseThrow(() -> new EntityNotFoundException("좌석을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.SEAT_NOT_FOUND));
 
         if (seat.getPerformance().getStatus() != PerformanceStatus.OPEN) {
-            throw new IllegalStateException("예매를 할 수 없습니다.");
+            throw new CustomException(CustomErrorCode.PERFORMANCE_NOT_OPEN);
         }
 
         int held = performanceSeatRepository.updateStatusIfMatch(
@@ -58,11 +60,11 @@ public class ReservationService {
         );
 
         if (held == 0) {
-            throw new IllegalStateException("이미 선점되었거나 예약된 좌석입니다.");
+            throw new CustomException(CustomErrorCode.SEAT_ALREADY_OCCUPIED);
         }
 
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -92,14 +94,14 @@ public class ReservationService {
     @Transactional
     public ReservationResponseDto cancelReservation(Long reservationId, Long memberId) {
         Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new EntityNotFoundException("예약을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.RESERVATION_NOT_FOUND));
 
         if (!reservation.getMember().getMemberId().equals(memberId)) {
-            throw new IllegalStateException("사용자 본인 예약만 취소할 수 있습니다.");
+            throw new CustomException(CustomErrorCode.REJECTED_PERMISSION);
         }
 
         if (reservation.getPerformanceSeat().getPerformance().getStatus() != PerformanceStatus.OPEN) {
-            throw new IllegalStateException("예매 종료 후에는 취소할 수 없습니다.");
+            throw new CustomException(CustomErrorCode.CANNOT_CANCEL_AFTER_CLOSE);
         }
 
         reservation.cancelAfterPayment();
