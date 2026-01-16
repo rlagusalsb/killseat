@@ -34,6 +34,10 @@ public enum CustomErrorCode {
     //공연 관련 (PER)
     PERFORMANCE_NOT_FOUND(HttpStatus.NOT_FOUND, "PER001", "해당 공연 정보를 찾을 수 없습니다."),
 
+    //좌석 관련 (S)
+    SEAT_NOT_FOUND(HttpStatus.NOT_FOUND, "S001", "좌석 정보를 찾을 수 없습니다."),
+    SEAT_ALREADY_OCCUPIED(HttpStatus.CONFLICT, "S002", "이미 선택되었거나 사용 중인 좌석입니다."),
+
     //공통 에러 (G)
     MISSING_PARAMETER(HttpStatus.BAD_REQUEST, "G001", "필수 요청 파라미터가 누락되었습니다."),
     INVALID_INPUT_FORMAT(HttpStatus.BAD_REQUEST, "G002", "입력 형식이 올바르지 않습니다."),
