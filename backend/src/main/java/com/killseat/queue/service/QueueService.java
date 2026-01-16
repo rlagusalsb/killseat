@@ -1,5 +1,7 @@
 package com.killseat.queue.service;
 
+import com.killseat.common.exception.CustomErrorCode;
+import com.killseat.common.exception.CustomException;
 import com.killseat.queue.dto.QueueResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -19,12 +21,12 @@ public class QueueService {
         String activeKey = ACTIVE_KEY + userId;
 
         if (Boolean.TRUE.equals(redisTemplate.hasKey(activeKey))) {
-            throw new IllegalStateException("이미 입장 허가된 사용자입니다.");
+            throw new CustomException(CustomErrorCode.ALREADY_ACTIVATED_USER);
         }
 
         Double score = redisTemplate.opsForZSet().score(waitingKey, userId.toString());
         if (score != null) {
-            throw new IllegalStateException("이미 대기열에 등록되어 있습니다.");
+            throw new CustomException(CustomErrorCode.ALREADY_IN_WAITING_QUEUE);
         }
 
         long now = System.currentTimeMillis();
