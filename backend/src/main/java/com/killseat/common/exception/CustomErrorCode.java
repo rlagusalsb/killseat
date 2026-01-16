@@ -10,7 +10,9 @@ public enum CustomErrorCode {
 
     //회원,인증 관련 (M)
     MEMBER_NOT_EXIST(HttpStatus.NOT_FOUND, "M001", "아이디 혹은 비밀번호를 확인해주세요"),
+    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "M002", "회원 정보를 찾을 수 없습니다."),
     TOKEN_NOT_VALID(HttpStatus.UNAUTHORIZED, "M003", "로그인이 인증되지 않았습니다"),
+    DUPLICATE_EMAIL(HttpStatus.CONFLICT, "M004", "이미 사용 중인 이메일입니다."),
 
     //댓글 관련 (C)
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "C001", "댓글을 찾을 수 없습니다."),
