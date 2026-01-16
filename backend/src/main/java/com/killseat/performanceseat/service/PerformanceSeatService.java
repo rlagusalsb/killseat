@@ -1,5 +1,7 @@
 package com.killseat.performanceseat.service;
 
+import com.killseat.common.exception.CustomErrorCode;
+import com.killseat.common.exception.CustomException;
 import com.killseat.performance.entity.Performance;
 import com.killseat.performance.repository.PerformanceRepository;
 import com.killseat.performanceseat.dto.PerformanceSeatResponseDto;
@@ -28,7 +30,7 @@ public class PerformanceSeatService {
     @Transactional
     public void createPerformanceSeats(Long performanceId) {
         Performance performance = performanceRepository.findById(performanceId)
-                .orElseThrow(() -> new EntityNotFoundException("공연을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PERFORMANCE_NOT_FOUND));
 
         List<Seat> seats = seatRepository.findAll();
 
@@ -55,14 +57,14 @@ public class PerformanceSeatService {
     @Transactional
     public void blockSeat(Long performanceSeatId) {
         PerformanceSeat seat = performanceSeatRepository.findById(performanceSeatId)
-                .orElseThrow(() -> new EntityNotFoundException("좌석을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.SEAT_NOT_FOUND));
         seat.block();
     }
 
     @Transactional
     public void unblockSeat(Long performanceSeatId) {
         PerformanceSeat seat = performanceSeatRepository.findById(performanceSeatId)
-                .orElseThrow(() -> new EntityNotFoundException("좌석을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.SEAT_NOT_FOUND));
         seat.unblock();
     }
 }
