@@ -19,33 +19,12 @@ public class PerformanceController {
     private final PerformanceService performanceService;
 
     @GetMapping
-    public ResponseEntity<List<PerformanceResponseDto>> getAll() {
-        return ResponseEntity.ok(performanceService.getAll());
+    public ResponseEntity<List<PerformanceResponseDto>> getActivePerformances() {
+        return ResponseEntity.ok(performanceService.getActivePerformances());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<PerformanceResponseDto> getOne(@PathVariable Long id) {
         return ResponseEntity.ok(performanceService.getOne(id));
-    }
-
-    @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PerformanceResponseDto> create(@RequestBody PerformanceRequestDto request) {
-        PerformanceResponseDto response = performanceService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PerformanceResponseDto> update(@PathVariable Long id, @RequestBody PerformanceRequestDto request) {
-        PerformanceResponseDto response = performanceService.update(id, request);
-        return ResponseEntity.ok(response);
-    }
-
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        performanceService.delete(id);
-        return ResponseEntity.noContent().build();
     }
 }
