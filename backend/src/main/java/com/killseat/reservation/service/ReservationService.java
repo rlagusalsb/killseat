@@ -17,6 +17,7 @@ import com.killseat.reservation.service.mapper.ReservationMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -122,5 +123,11 @@ public class ReservationService {
 
         Reservation detail = reservationRepository.findDetailById(reservationId);
         return reservationMapper.toDto(detail);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ReservationResponseDto> getAllReservationsForAdmin(Pageable pageable) {
+        return reservationRepository.findAll(pageable)
+                .map(reservationMapper::toDto);
     }
 }
