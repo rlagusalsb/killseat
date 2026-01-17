@@ -1,18 +1,24 @@
 package com.killseat.performance.service;
 
+import com.killseat.admin.performance.dto.AdminPerformanceRequestDto;
 import com.killseat.common.exception.CustomErrorCode;
 import com.killseat.common.exception.CustomException;
 import com.killseat.performance.dto.PerformanceRequestDto;
 import com.killseat.performance.dto.PerformanceResponseDto;
 import com.killseat.performance.entity.Performance;
+import com.killseat.performance.entity.PerformanceStatus;
 import com.killseat.performance.repository.PerformanceRepository;
 import com.killseat.performance.service.mapper.PerformanceMapper;
+import com.killseat.performanceseat.entity.PerformanceSeat;
+import com.killseat.performanceseat.entity.PerformanceSeatStatus;
+import com.killseat.performanceseat.repository.PerformanceSeatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,43 +27,123 @@ import java.util.stream.Collectors;
 public class PerformanceService {
 
     private final PerformanceRepository performanceRepository;
-    private  final PerformanceMapper performanceMapper;
+    private final PerformanceSeatRepository performanceSeatRepository;
+    private final PerformanceMapper performanceMapper;
 
+    //OPEN 상태인 공연들만 조회
     @Cacheable(value = "performanceList", key = "'all'")
     @Transactional(readOnly = true)
-    public List<PerformanceResponseDto> getAll() {
+    public List<PerformanceResponseDto> getActivePerformances() {
+        return performanceRepository.findAllByStatus(PerformanceStatus.OPEN).stream()
+                .map(performanceMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    //공연 상세 조회
+    @Transactional(readOnly = true)
+    public PerformanceResponseDto getOne(Long id) {
+        Performance performance = performanceRepository.findById(id)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PERFORMANCE_NOT_FOUND));
+
+        if (performance.getStatus() != PerformanceStatus.OPEN) {
+            throw new CustomException(CustomErrorCode.PERFORMANCE_NOT_FOUND);
+        }
+
+        return performanceMapper.toDto(performance);
+    }
+
+    //관리자용 공연 상세 조회
+    @Transactional(readOnly = true)
+    public PerformanceResponseDto getOneForAdmin(Long id) {
+        Performance performance = performanceRepository.findById(id)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PERFORMANCE_NOT_FOUND));
+
+        return performanceMapper.toDto(performance);
+    }
+
+    //관리자 전용 전체 공연 목록 조회
+    @Transactional(readOnly = true)
+    public List<PerformanceResponseDto> getAllForAdmin() {
         return performanceRepository.findAll().stream()
                 .map(performanceMapper::toDto)
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
-    public PerformanceResponseDto getOne(Long id) {
+    //공연 및 좌석 등록
+    @CacheEvict(value = "performanceList", allEntries = true)
+    @Transactional
+    public void createByAdmin(AdminPerformanceRequestDto request) {
+        Performance performance = Performance.builder()
+                .title(request.getTitle())
+                .content(request.getContent())
+                .location(request.getLocation())
+                .price(request.getPrice())
+                .startTime(request.getStartTime())
+                .endTime(request.getEndTime())
+                .status(PerformanceStatus.BEFORE_OPEN)
+                .build();
+
+        Performance savedPerformance = performanceRepository.save(performance);
+
+        List<PerformanceSeat> seats = new ArrayList<>();
+
+        for (int r = 0; r < request.getRows(); r++) {
+            char rowLabel = (char) ('A' + r);
+
+            for (int s = 1; s <= request.getSeatsPerRow(); s++) {
+                String seatNumber = rowLabel + String.valueOf(s);
+
+                seats.add(PerformanceSeat.builder()
+                        .performance(savedPerformance)
+                        .seatNumber(seatNumber)
+                        .status(PerformanceSeatStatus.AVAILABLE)
+                        .build());
+            }
+        }
+
+        performanceSeatRepository.saveAll(seats);
+    }
+
+    //공연 정보 수정
+    @CacheEvict(value = "performanceList", allEntries = true)
+    @Transactional
+    public void update(Long id, AdminPerformanceRequestDto request) {
         Performance performance = performanceRepository.findById(id)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PERFORMANCE_NOT_FOUND));
-        return performanceMapper.toDto(performance);
+
+        performance.update(
+                request.getTitle(),
+                request.getContent(),
+                request.getLocation(),
+                request.getPrice(),
+                request.getStartTime(),
+                request.getEndTime()
+        );
     }
 
+    //공연 상태 수정 (BEFORE_OPEN -> OPEN)
     @CacheEvict(value = "performanceList", allEntries = true)
     @Transactional
-    public PerformanceResponseDto create(PerformanceRequestDto request) {
-        Performance performance = performanceMapper.toEntity(request);
-        return performanceMapper.toDto(performanceRepository.save(performance));
-    }
-
-    @CacheEvict(value = "performanceList", allEntries = true)
-
-    @Transactional
-    public PerformanceResponseDto update(Long id, PerformanceRequestDto request) {
+    public void openPerformance(Long id) {
         Performance performance = performanceRepository.findById(id)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PERFORMANCE_NOT_FOUND));
-        performance.update(request.getTitle(), request.getPrice(), request.getStartTime(), request.getEndTime());
-        return performanceMapper.toDto(performance);
+        performance.openSales();
     }
 
+    //공연 상태 수정 (OPEN -> CLOSED)
     @CacheEvict(value = "performanceList", allEntries = true)
     @Transactional
-    public void delete(Long id) {
-        performanceRepository.deleteById(id);
+    public void closePerformance(Long id) {
+        Performance performance = performanceRepository.findById(id)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PERFORMANCE_NOT_FOUND));
+        performance.closeSales();
+    }
+
+    //특정 좌석 상태 변경
+    @Transactional
+    public void updateSeatStatus(Long seatId, PerformanceSeatStatus status) {
+        PerformanceSeat seat = performanceSeatRepository.findById(seatId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.SEAT_NOT_FOUND));
+        seat.updateStatus(status);
     }
 }
