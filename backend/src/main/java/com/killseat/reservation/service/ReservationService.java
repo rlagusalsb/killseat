@@ -102,11 +102,21 @@ public class ReservationService {
             throw new CustomException(CustomErrorCode.CANNOT_CANCEL_AFTER_CLOSE);
         }
 
-        reservation.cancelAfterPayment();
+        ReservationStatus previousStatus = reservation.getStatus();
+
+        if (previousStatus == ReservationStatus.CONFIRMED) {
+            reservation.cancelAfterPayment();
+        } else {
+            reservation.cancelBeforePayment();
+        }
+
+        PerformanceSeatStatus fromStatus = (previousStatus == ReservationStatus.CONFIRMED)
+                ? PerformanceSeatStatus.RESERVED
+                : PerformanceSeatStatus.HELD;
 
         performanceSeatRepository.updateStatusIfMatch(
                 reservation.getPerformanceSeat().getPerformanceSeatId(),
-                PerformanceSeatStatus.RESERVED,
+                fromStatus,
                 PerformanceSeatStatus.AVAILABLE
         );
 
