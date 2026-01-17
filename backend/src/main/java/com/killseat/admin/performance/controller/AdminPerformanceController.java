@@ -33,4 +33,10 @@ public class AdminPerformanceController {
         performanceService.openPerformance(id);
         return ResponseEntity.ok().build();
     }
+
+    @PatchMapping("/{id}/close")
+    public ResponseEntity<Void> closePerformance(@PathVariable Long id) {
+        performanceService.closePerformance(id);
+        return ResponseEntity.ok().build();
+    }
 }
