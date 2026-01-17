@@ -89,7 +89,7 @@ public class PerformanceService {
     //공연 정보 수정
     @CacheEvict(value = "performanceList", allEntries = true)
     @Transactional
-    public void update(Long id, AdminPerformanceRequestDto request) {
+    public PerformanceResponseDto updatePerformance(Long id, AdminPerformanceRequestDto request) {
         Performance performance = performanceRepository.findById(id)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PERFORMANCE_NOT_FOUND));
 
@@ -101,6 +101,8 @@ public class PerformanceService {
                 request.getStartTime(),
                 request.getEndTime()
         );
+
+        return performanceMapper.toDto(performance);
     }
 
     //공연 상태 수정 (BEFORE_OPEN -> OPEN)
