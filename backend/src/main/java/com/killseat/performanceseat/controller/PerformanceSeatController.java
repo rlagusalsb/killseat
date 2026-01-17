@@ -15,7 +15,7 @@ public class PerformanceSeatController {
 
     private final PerformanceSeatService performanceSeatService;
 
-    @GetMapping("/performance/{performanceId}")
+    @GetMapping("/{performanceId}")
     public ResponseEntity<List<PerformanceSeatResponseDto>> getSeatsByPerformance(
             @PathVariable Long performanceId) {
         List<PerformanceSeatResponseDto> seats =
