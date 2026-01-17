@@ -1,5 +1,6 @@
 package com.killseat.member.service;
 
+import com.killseat.admin.member.MemberResponseDto;
 import com.killseat.common.exception.CustomErrorCode;
 import com.killseat.common.exception.CustomException;
 import com.killseat.member.dto.SignupRequestDto;
@@ -7,6 +8,8 @@ import com.killseat.member.entity.Member;
 import com.killseat.member.entity.Role;
 import com.killseat.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,5 +40,17 @@ public class MemberService {
                 .build();
 
         memberRepository.save(member);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<MemberResponseDto> getAllMembers(Pageable pageable) {
+        return memberRepository.findAll(pageable)
+                .map(member -> MemberResponseDto.builder()
+                        .memberId(member.getMemberId())
+                        .email(member.getEmail())
+                        .name(member.getName())
+                        .role(member.getRole())
+                        .createdAt(member.getCreatedAt())
+                        .build());
     }
 }
