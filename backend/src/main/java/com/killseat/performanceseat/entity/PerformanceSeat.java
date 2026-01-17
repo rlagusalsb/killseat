@@ -33,6 +33,10 @@ public class PerformanceSeat {
     @Column(nullable = false, length = 20)
     private PerformanceSeatStatus status = PerformanceSeatStatus.AVAILABLE;
 
+    public void updateStatus(PerformanceSeatStatus status) {
+        this.status = status;
+    }
+
     @Builder
     private PerformanceSeat(Performance performance, Seat seat, PerformanceSeatStatus status) {
         this.performance = performance;
