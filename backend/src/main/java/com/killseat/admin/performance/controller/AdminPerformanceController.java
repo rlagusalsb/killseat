@@ -39,4 +39,11 @@ public class AdminPerformanceController {
         performanceService.closePerformance(id);
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<PerformanceResponseDto> updatePerformance(
+            @PathVariable Long id,
+            @RequestBody AdminPerformanceRequestDto request) {
+        return ResponseEntity.ok(performanceService.updatePerformance(id, request));
+    }
 }
