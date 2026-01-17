@@ -14,7 +14,6 @@ import com.killseat.reservation.entity.Reservation;
 import com.killseat.reservation.entity.ReservationStatus;
 import com.killseat.reservation.repository.ReservationRepository;
 import com.killseat.reservation.service.mapper.ReservationMapper;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
