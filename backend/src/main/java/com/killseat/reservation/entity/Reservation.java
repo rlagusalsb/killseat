@@ -83,10 +83,6 @@ public class Reservation {
         cancelBeforePayment();
     }
 
-    public void expire() {
-        cancelBeforePayment();
-    }
-
     //결제 전 예약 취소
     public void cancelBeforePayment() {
         if (this.status == ReservationStatus.CANCELED) {
