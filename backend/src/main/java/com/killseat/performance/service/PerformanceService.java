@@ -3,22 +3,18 @@ package com.killseat.performance.service;
 import com.killseat.admin.performance.dto.AdminPerformanceRequestDto;
 import com.killseat.common.exception.CustomErrorCode;
 import com.killseat.common.exception.CustomException;
-import com.killseat.performance.dto.PerformanceRequestDto;
 import com.killseat.performance.dto.PerformanceResponseDto;
 import com.killseat.performance.entity.Performance;
 import com.killseat.performance.entity.PerformanceStatus;
 import com.killseat.performance.repository.PerformanceRepository;
 import com.killseat.performance.service.mapper.PerformanceMapper;
-import com.killseat.performanceseat.entity.PerformanceSeat;
-import com.killseat.performanceseat.entity.PerformanceSeatStatus;
-import com.killseat.performanceseat.repository.PerformanceSeatRepository;
+import com.killseat.performanceseat.service.PerformanceSeatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,7 +23,7 @@ import java.util.stream.Collectors;
 public class PerformanceService {
 
     private final PerformanceRepository performanceRepository;
-    private final PerformanceSeatRepository performanceSeatRepository;
+    private final PerformanceSeatService performanceSeatService;
     private final PerformanceMapper performanceMapper;
 
     //OPEN 상태인 공연들만 조회
@@ -52,7 +48,7 @@ public class PerformanceService {
         return performanceMapper.toDto(performance);
     }
 
-    //관리자용 공연 상세 조회
+    //관리자 전용 공연 상세 조회
     @Transactional(readOnly = true)
     public PerformanceResponseDto getOneForAdmin(Long id) {
         Performance performance = performanceRepository.findById(id)
@@ -69,10 +65,10 @@ public class PerformanceService {
                 .collect(Collectors.toList());
     }
 
-    //공연 및 좌석 등록
+    //관리자 전용 공연 및 좌석 등록
     @CacheEvict(value = "performanceList", allEntries = true)
     @Transactional
-    public void createByAdmin(AdminPerformanceRequestDto request) {
+    public PerformanceResponseDto createByAdmin(AdminPerformanceRequestDto request) {
         Performance performance = Performance.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
@@ -85,23 +81,9 @@ public class PerformanceService {
 
         Performance savedPerformance = performanceRepository.save(performance);
 
-        List<PerformanceSeat> seats = new ArrayList<>();
+        performanceSeatService.createPerformanceSeats(savedPerformance);
 
-        for (int r = 0; r < request.getRows(); r++) {
-            char rowLabel = (char) ('A' + r);
-
-            for (int s = 1; s <= request.getSeatsPerRow(); s++) {
-                String seatNumber = rowLabel + String.valueOf(s);
-
-                seats.add(PerformanceSeat.builder()
-                        .performance(savedPerformance)
-                        .seatNumber(seatNumber)
-                        .status(PerformanceSeatStatus.AVAILABLE)
-                        .build());
-            }
-        }
-
-        performanceSeatRepository.saveAll(seats);
+        return performanceMapper.toDto(savedPerformance);
     }
 
     //공연 정보 수정
@@ -137,13 +119,5 @@ public class PerformanceService {
         Performance performance = performanceRepository.findById(id)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PERFORMANCE_NOT_FOUND));
         performance.closeSales();
-    }
-
-    //특정 좌석 상태 변경
-    @Transactional
-    public void updateSeatStatus(Long seatId, PerformanceSeatStatus status) {
-        PerformanceSeat seat = performanceSeatRepository.findById(seatId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.SEAT_NOT_FOUND));
-        seat.updateStatus(status);
     }
 }
