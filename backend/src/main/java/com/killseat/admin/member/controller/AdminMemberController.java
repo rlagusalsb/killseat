@@ -1,5 +1,6 @@
-package com.killseat.admin.member;
+package com.killseat.admin.member.controller;
 
+import com.killseat.admin.member.dto.MemberResponseDto;
 import com.killseat.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

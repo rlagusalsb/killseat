@@ -1,6 +1,6 @@
 package com.killseat.member.service;
 
-import com.killseat.admin.member.MemberResponseDto;
+import com.killseat.admin.member.dto.MemberResponseDto;
 import com.killseat.common.exception.CustomErrorCode;
 import com.killseat.common.exception.CustomException;
 import com.killseat.member.dto.SignupRequestDto;

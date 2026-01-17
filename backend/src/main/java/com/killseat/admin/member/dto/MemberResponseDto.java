@@ -1,4 +1,4 @@
-package com.killseat.admin.member;
+package com.killseat.admin.member.dto;
 
 import com.killseat.member.entity.Role;
 import lombok.AllArgsConstructor;

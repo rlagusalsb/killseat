@@ -1,5 +1,6 @@
-package com.killseat.admin.payment;
+package com.killseat.admin.payment.controller;
 
+import com.killseat.admin.payment.dto.PaymentResponseDto;
 import com.killseat.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

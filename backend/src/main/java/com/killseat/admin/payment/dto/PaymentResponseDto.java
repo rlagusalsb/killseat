@@ -1,4 +1,4 @@
-package com.killseat.admin.payment;
+package com.killseat.admin.payment.dto;
 
 import com.killseat.payment.entity.PaymentStatus;
 import lombok.AllArgsConstructor;

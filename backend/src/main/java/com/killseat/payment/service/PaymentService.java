@@ -1,6 +1,6 @@
 package com.killseat.payment.service;
 
-import com.killseat.admin.payment.PaymentResponseDto;
+import com.killseat.admin.payment.dto.PaymentResponseDto;
 import com.killseat.common.exception.CustomErrorCode;
 import com.killseat.common.exception.CustomException;
 import com.killseat.payment.PortOneClient;
@@ -13,7 +13,6 @@ import com.killseat.performanceseat.repository.PerformanceSeatRepository;
 import com.killseat.reservation.entity.Reservation;
 import com.killseat.reservation.entity.ReservationStatus;
 import com.killseat.reservation.repository.ReservationRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
