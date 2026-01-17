@@ -1,11 +1,11 @@
 package com.killseat.reservation.scheduler;
 
-import com.killseat.reservation.entity.Reservation;
 import com.killseat.reservation.entity.ReservationStatus;
 import com.killseat.reservation.repository.ReservationRepository;
 import com.killseat.performanceseat.entity.PerformanceSeatStatus;
 import com.killseat.performanceseat.repository.PerformanceSeatRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ReservationExpireScheduler {
@@ -25,27 +26,33 @@ public class ReservationExpireScheduler {
     public void expireReservations() {
         LocalDateTime now = LocalDateTime.now();
 
-        List<Reservation> expired = reservationRepository.findExpiredPendingOnly(now);
+        //만료된 예약(PENDING 상태고 시간이 지난)들에 연결된 좌석 ID 리스트만 가져옴 (엔티티를 가져오는거보다 ID만 가져오는게 가벼움)
+        List<Long> seatIdsToRelease = reservationRepository.findSeatIdsByExpiredReservation(
+                ReservationStatus.PENDING,
+                now
+        );
 
-        if (expired.isEmpty()) {
+        //처리할 대상이 없으면 종료
+        if (seatIdsToRelease.isEmpty()) {
             return;
         }
 
-        for (Reservation reservation : expired) {
-            int changed = reservationRepository.updateStatusIfMatch(
-                    reservation.getReservationId(),
-                    ReservationStatus.PENDING,
-                    ReservationStatus.CANCELED,
-                    now
+        //예약 테이블의 상태를 한꺼번에 CANCELED로 바꿈
+        int updatedReservations = reservationRepository.bulkUpdateStatusForExpired(
+                ReservationStatus.PENDING,
+                ReservationStatus.CANCELED,
+                now
+        );
+
+        //좌석 테이블의 상태를 한꺼번에 AVAILABLE로 되돌림
+        if (updatedReservations > 0) {
+            int updatedSeats = performanceSeatRepository.bulkUpdateSeatStatus(
+                    seatIdsToRelease,
+                    PerformanceSeatStatus.HELD,
+                    PerformanceSeatStatus.AVAILABLE
             );
 
-            if (changed > 0) {
-                performanceSeatRepository.updateStatusIfMatch(
-                        reservation.getPerformanceSeat().getPerformanceSeatId(),
-                        PerformanceSeatStatus.HELD,
-                        PerformanceSeatStatus.AVAILABLE
-                );
-            }
+            log.info("스케줄러 - 만료 예약 {}건 취소 및 좌석 {}개 해제 완료", updatedReservations, updatedSeats);
         }
     }
 }
