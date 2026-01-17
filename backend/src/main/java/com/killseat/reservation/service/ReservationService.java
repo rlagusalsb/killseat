@@ -130,4 +130,31 @@ public class ReservationService {
         return reservationRepository.findAll(pageable)
                 .map(reservationMapper::toDto);
     }
+
+    @Transactional
+    public ReservationResponseDto cancelReservationByAdmin(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.RESERVATION_NOT_FOUND));
+
+        ReservationStatus previousStatus = reservation.getStatus();
+
+        if (previousStatus == ReservationStatus.CONFIRMED) {
+            reservation.cancelAfterPayment();
+        } else {
+            reservation.cancelBeforePayment();
+        }
+
+        PerformanceSeatStatus fromStatus = (previousStatus == ReservationStatus.CONFIRMED)
+                ? PerformanceSeatStatus.RESERVED
+                : PerformanceSeatStatus.HELD;
+
+        performanceSeatRepository.updateStatusIfMatch(
+                reservation.getPerformanceSeat().getPerformanceSeatId(),
+                fromStatus,
+                PerformanceSeatStatus.AVAILABLE
+        );
+
+        Reservation detail = reservationRepository.findDetailById(reservationId);
+        return reservationMapper.toDto(detail);
+    }
 }
