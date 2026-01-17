@@ -16,11 +16,18 @@ import java.time.LocalDateTime;
 public class Performance {
 
     @Id
+    @Column(name = "performance_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long performanceId;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 255)
     private String title;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String content;
+
+    @Column(nullable = false, length = 255)
+    private String location;
 
     @Column(nullable = false)
     private Long price;
@@ -42,16 +49,26 @@ public class Performance {
     private LocalDateTime createdAt;
 
     @Builder
-    private Performance(String title, Long price, LocalDateTime startTime, LocalDateTime endTime, PerformanceStatus status) {
+    private Performance(String title, String content, String location, Long price,
+                        LocalDateTime startTime, LocalDateTime endTime, PerformanceStatus status
+    )
+    {
         this.title = title;
+        this.content = content;
+        this.location = location;
         this.price = price;
         this.startTime = startTime;
         this.endTime = endTime;
         this.status = (status != null) ? status : PerformanceStatus.BEFORE_OPEN;
     }
 
-    public void update(String title, Long price, LocalDateTime startTime, LocalDateTime endTime) {
+    public void update(String title, String content, String location, Long price,
+                       LocalDateTime startTime, LocalDateTime endTime
+    )
+    {
         this.title = title;
+        this.content = content;
+        this.location = location;
         this.price = price;
         this.startTime = startTime;
         this.endTime = endTime;
