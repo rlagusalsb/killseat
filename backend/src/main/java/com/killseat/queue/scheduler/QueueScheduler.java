@@ -38,8 +38,10 @@ public class QueueScheduler {
                 redisTemplate.opsForValue().set(ACTIVE_KEY_PREFIX + userId, "PROCEED", Duration.ofMinutes(5));
                 redisTemplate.opsForZSet().remove(waitingKey, userId);
 
+                Long parsedUserId = Long.parseLong(userId.replace("\"", ""));
+
                 //유저에게 SSE로 실시간 알림 발송
-                queueNotificationService.sendToUser(Long.parseLong(userId), "proceed", "입장 가능");
+                queueNotificationService.sendToUser(parsedUserId, "proceed", "입장 가능");
 
             }
 
@@ -47,7 +49,10 @@ public class QueueScheduler {
 
             for (String uid : allWaitingUsers) {
                 Long rank = redisTemplate.opsForZSet().rank(waitingKey, uid);
-                queueNotificationService.sendToUser(Long.parseLong(uid), "update", (rank + 1) + "명 남았습니다.");
+
+                Long parsedUid = Long.parseLong(uid.replace("\"", ""));
+
+                queueNotificationService.sendToUser(parsedUid, "update", (rank + 1) + "명 남았습니다.");
             }
         }
     }
