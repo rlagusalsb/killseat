@@ -37,6 +37,7 @@ public class SecurityConfig {
                         .requestMatchers(OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**", "/api/members/**", "/api/performances/**", "/api/queue/subscribe/**").permitAll()
                         .requestMatchers(POST, "/api/payments/confirm").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                         .requestMatchers(GET, "/api/posts/**").permitAll()
                         .requestMatchers(POST, "/api/posts/**").authenticated()
