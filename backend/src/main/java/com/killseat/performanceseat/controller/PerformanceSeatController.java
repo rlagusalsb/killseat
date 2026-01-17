@@ -16,7 +16,7 @@ public class PerformanceSeatController {
 
     private final PerformanceSeatService performanceSeatService;
 
-    @GetMapping("/{performanceId}")
+    @GetMapping("/performance/{performanceId}")
     public ResponseEntity<List<PerformanceSeatResponseDto>> getSeatsByPerformance(
             @PathVariable Long performanceId) {
         List<PerformanceSeatResponseDto> seats =
@@ -24,24 +24,9 @@ public class PerformanceSeatController {
         return ResponseEntity.ok(seats);
     }
 
-    @PostMapping("/{performanceId}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> createPerformanceSeats(@PathVariable Long performanceId) {
-        performanceSeatService.createPerformanceSeats(performanceId);
-        return ResponseEntity.ok().build();
-    }
-
-    @PutMapping("/{performanceSeatId}/block")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> blockSeat(@PathVariable Long performanceSeatId) {
-        performanceSeatService.blockSeat(performanceSeatId);
-        return ResponseEntity.ok().build();
-    }
-
-    @PutMapping("/{performanceSeatId}/unblock")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> unblockSeat(@PathVariable Long performanceSeatId) {
-        performanceSeatService.unblockSeat(performanceSeatId);
+    @PostMapping("/{performanceSeatId}/hold")
+    public ResponseEntity<Void> holdSeat(@PathVariable Long performanceSeatId) {
+        performanceSeatService.holdSeat(performanceSeatId);
         return ResponseEntity.ok().build();
     }
 }
