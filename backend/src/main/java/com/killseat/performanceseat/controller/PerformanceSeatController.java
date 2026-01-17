@@ -4,7 +4,6 @@ import com.killseat.performanceseat.dto.PerformanceSeatResponseDto;
 import com.killseat.performanceseat.service.PerformanceSeatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
