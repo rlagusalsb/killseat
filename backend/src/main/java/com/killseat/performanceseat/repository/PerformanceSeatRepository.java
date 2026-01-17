@@ -37,4 +37,15 @@ public interface PerformanceSeatRepository extends JpaRepository<PerformanceSeat
     int updateStatusIfMatch(@Param("id") Long performanceSeatId,
                             @Param("from") PerformanceSeatStatus from,
                             @Param("to") PerformanceSeatStatus to);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+        update PerformanceSeat ps
+           set ps.status = :to
+         where ps.performanceSeatId in :ids
+           and ps.status = :from
+    """)
+    int bulkUpdateSeatStatus(@Param("ids") List<Long> performanceSeatIds,
+                             @Param("from") PerformanceSeatStatus from,
+                             @Param("to") PerformanceSeatStatus to);
 }
