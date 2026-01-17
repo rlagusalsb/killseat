@@ -1,5 +1,6 @@
 package com.killseat.payment.service;
 
+import com.killseat.admin.payment.PaymentResponseDto;
 import com.killseat.common.exception.CustomErrorCode;
 import com.killseat.common.exception.CustomException;
 import com.killseat.payment.PortOneClient;
@@ -14,6 +15,8 @@ import com.killseat.reservation.entity.ReservationStatus;
 import com.killseat.reservation.repository.ReservationRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -162,5 +165,23 @@ public class PaymentService {
 
     private Long calculateExpectedAmount(Reservation reservation) {
         return reservation.getPerformanceSeat().getPerformance().getPrice();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PaymentResponseDto> getAllPaymentsForAdmin(Pageable pageable) {
+        return paymentRepository.findAll(pageable)
+                .map(payment -> {
+                    Reservation reservation = payment.getReservation();
+                    return PaymentResponseDto.builder()
+                            .paymentId(payment.getPaymentId())
+                            .merchantUid(payment.getMerchantUid())
+                            .amount(payment.getAmount())
+                            .status(payment.getStatus())
+                            .buyerName(reservation.getMember().getName())
+                            .buyerEmail(reservation.getMember().getEmail())
+                            .performanceTitle(reservation.getPerformanceSeat().getPerformance().getTitle())
+                            .createdAt(payment.getCreatedAt())
+                            .build();
+                });
     }
 }
