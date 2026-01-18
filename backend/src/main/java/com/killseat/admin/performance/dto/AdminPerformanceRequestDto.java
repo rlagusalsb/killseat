@@ -1,6 +1,7 @@
 package com.killseat.admin.performance.dto;
 
 import com.killseat.performance.dto.ScheduleRequestDto;
+import com.killseat.performance.entity.PerformanceStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,6 +20,6 @@ public class AdminPerformanceRequestDto {
     private String location;
     private Long price;
     private String thumbnailUrl;
-    private int totalSeats;
+    private PerformanceStatus status;
     private List<ScheduleRequestDto> schedules;
 }
