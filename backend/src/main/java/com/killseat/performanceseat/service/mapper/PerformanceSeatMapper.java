@@ -1,6 +1,6 @@
 package com.killseat.performanceseat.service.mapper;
 
-import com.killseat.performance.entity.Performance;
+import com.killseat.performance.entity.PerformanceSchedule; // Performance 대신 Schedule 임포트
 import com.killseat.performanceseat.dto.PerformanceSeatResponseDto;
 import com.killseat.performanceseat.entity.PerformanceSeat;
 import com.killseat.performanceseat.entity.PerformanceSeatStatus;
@@ -10,9 +10,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class PerformanceSeatMapper {
 
-    public PerformanceSeat toEntity(Performance performance, Seat seat) {
+    public PerformanceSeat toEntity(PerformanceSchedule performanceSchedule, Seat seat) {
         return PerformanceSeat.builder()
-                .performance(performance)
+                .performanceSchedule(performanceSchedule)
                 .seat(seat)
                 .status(PerformanceSeatStatus.AVAILABLE)
                 .build();
@@ -21,7 +21,8 @@ public class PerformanceSeatMapper {
     public PerformanceSeatResponseDto toDto(PerformanceSeat entity) {
         return new PerformanceSeatResponseDto(
                 entity.getPerformanceSeatId(),
-                entity.getPerformance().getPerformanceId(),
+                entity.getPerformanceSchedule().getPerformance().getPerformanceId(),
+                entity.getPerformanceSchedule().getScheduleId(),
                 entity.getSeat().getSeatId(),
                 entity.getSeat().getSeatNumber(),
                 entity.getStatus().name()
