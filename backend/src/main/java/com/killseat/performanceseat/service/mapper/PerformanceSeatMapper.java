@@ -1,6 +1,6 @@
 package com.killseat.performanceseat.service.mapper;
 
-import com.killseat.performance.entity.PerformanceSchedule; // Performance 대신 Schedule 임포트
+import com.killseat.performance.entity.PerformanceSchedule;
 import com.killseat.performanceseat.dto.PerformanceSeatResponseDto;
 import com.killseat.performanceseat.entity.PerformanceSeat;
 import com.killseat.performanceseat.entity.PerformanceSeatStatus;

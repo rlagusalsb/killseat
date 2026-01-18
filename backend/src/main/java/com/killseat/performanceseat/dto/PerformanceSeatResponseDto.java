@@ -8,6 +8,7 @@ import lombok.Getter;
 public class PerformanceSeatResponseDto {
     private Long performanceSeatId;
     private Long performanceId;
+    private Long scheduleId;
     private Long seatId;
     private String seatNumber;
     private String status;
