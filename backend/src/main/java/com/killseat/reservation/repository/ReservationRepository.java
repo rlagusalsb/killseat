@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
+
     //예약 상세 조회
     @Query("""
         select r
@@ -20,7 +21,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
           join fetch r.member m
           join fetch r.performanceSeat ps
           join fetch ps.seat s
-          join fetch ps.performance p
+          join fetch ps.performanceSchedule sc
+          join fetch sc.performance p
          where r.reservationId = :id
     """)
     Reservation findDetailById(@Param("id") Long reservationId);
@@ -55,7 +57,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
           from Reservation r
           join fetch r.performanceSeat ps
           join fetch ps.seat s
-          join fetch ps.performance p
+          join fetch ps.performanceSchedule sc
+          join fetch sc.performance p
          where r.member.memberId = :memberId
            and r.status <> :excludedStatus
          order by r.createdAt desc
@@ -77,7 +80,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         select r
           from Reservation r
           join fetch r.performanceSeat ps
-          join fetch ps.performance p
+          join fetch ps.performanceSchedule sc
+          join fetch sc.performance p
          where r.reservationId = :id
     """)
     Reservation findForPaymentPrepare(@Param("id") Long reservationId);
