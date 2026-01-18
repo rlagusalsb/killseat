@@ -81,11 +81,6 @@ public class Performance {
         this.price = price;
         this.status = status;
         this.thumbnailUrl = thumbnailUrl;
-
-        if (newSchedules != null && !newSchedules.isEmpty()) {
-            this.schedules.clear();
-            newSchedules.forEach(this::addSchedule);
-        }
     }
 
     public void updateStatus(PerformanceStatus status) {
@@ -93,7 +88,9 @@ public class Performance {
     }
 
     public void openSales() {
-        if (this.status == PerformanceStatus.OPEN) return;
+        if (this.status == PerformanceStatus.OPEN) {
+            return;
+        }
 
         if (this.status != PerformanceStatus.BEFORE_OPEN) {
             throw new CustomException(CustomErrorCode.INVALID_PERFORMANCE_STATUS);
