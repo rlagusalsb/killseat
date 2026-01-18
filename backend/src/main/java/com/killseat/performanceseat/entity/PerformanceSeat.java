@@ -1,7 +1,7 @@
 package com.killseat.performanceseat.entity;
 
+import com.killseat.performance.entity.PerformanceSchedule;
 import com.killseat.seat.entity.Seat;
-import com.killseat.performance.entity.Performance;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -11,7 +11,9 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "performance_seat",
         uniqueConstraints = {
-            @UniqueConstraint(columnNames = {"performance_id", "seat_id"})
+            @UniqueConstraint(
+                    name = "uk+performance_schedule_seat",
+                    columnNames = {"performance_schedule_id", "seat_id"})
         })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -22,8 +24,8 @@ public class PerformanceSeat {
     private Long performanceSeatId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "performance_id", nullable = false)
-    private Performance performance;
+    @JoinColumn(name = "performance_schedule_id", nullable = false)
+    private PerformanceSchedule performanceSchedule;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "seat_id", nullable = false)
@@ -38,8 +40,8 @@ public class PerformanceSeat {
     }
 
     @Builder
-    private PerformanceSeat(Performance performance, Seat seat, PerformanceSeatStatus status) {
-        this.performance = performance;
+    private PerformanceSeat(PerformanceSchedule performanceSchedule, Seat seat, PerformanceSeatStatus status) {
+        this.performanceSchedule = performanceSchedule;
         this.seat = seat;
         this.status = (status != null) ? status : PerformanceSeatStatus.AVAILABLE;
     }
