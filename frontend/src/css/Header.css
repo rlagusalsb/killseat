@@ -14,6 +14,11 @@ header h1 {
   color: #222;
 }
 
+.logo-img {
+  height: 40px;
+  display: block;
+}
+
 nav {
   display: flex;
   align-items: center;
@@ -32,9 +37,26 @@ nav a:hover {
   color: #0066cc;
 }
 
+.admin-nav-link {
+  color: #d32f2f !important;
+  font-weight: 700 !important;
+  border: 1px solid #d32f2f;
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin-left: 1.5rem;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.admin-nav-link:hover {
+  background-color: #d32f2f;
+  color: #ffffff !important;
+}
+
 nav button {
   margin-left: 1.5rem;
-  background: none;
+  background: transparent !important;
+  background-color: transparent !important;
   border: none;
   padding: 0;
   font-weight: 500;
@@ -50,11 +72,10 @@ nav button:hover {
   color: #0066cc;
 }
 
-nav button,
-nav button:hover,
 nav button:active,
 nav button:focus,
 nav button:focus-visible {
+  outline: none;
   background: transparent !important;
   background-color: transparent !important;
 }
