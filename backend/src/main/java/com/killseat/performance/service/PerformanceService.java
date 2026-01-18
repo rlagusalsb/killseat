@@ -90,13 +90,16 @@ public class PerformanceService {
         Performance performance = performanceRepository.findById(id)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PERFORMANCE_NOT_FOUND));
 
-        List<PerformanceSchedule> newSchedules = request.getSchedules().stream()
+        List<PerformanceSchedule> newSchedules = (request.getSchedules() != null
+                && !request.getSchedules().isEmpty())
+                ? request.getSchedules().stream()
                 .map(s -> PerformanceSchedule.builder()
                         .startTime(s.getStartTime())
                         .endTime(s.getEndTime())
                         .performance(performance)
                         .build())
-                .collect(Collectors.toList());
+                .collect(Collectors.toList())
+                : null;
 
         performance.update(
                 request.getTitle(),
