@@ -5,7 +5,7 @@ import com.killseat.common.exception.CustomErrorCode;
 import com.killseat.common.exception.CustomException;
 import com.killseat.payment.PortOneClient;
 import com.killseat.payment.dto.*;
-import com.killseat.payment.entity.Payment;
+        import com.killseat.payment.entity.Payment;
 import com.killseat.payment.entity.PaymentStatus;
 import com.killseat.payment.repository.PaymentRepository;
 import com.killseat.performanceseat.entity.PerformanceSeatStatus;
@@ -174,7 +174,7 @@ public class PaymentService {
     }
 
     private Long calculateExpectedAmount(Reservation reservation) {
-        return reservation.getPerformanceSeat().getPerformance().getPrice();
+        return reservation.getPerformanceSeat().getPerformanceSchedule().getPerformance().getPrice();
     }
 
     @Transactional(readOnly = true)
@@ -189,7 +189,7 @@ public class PaymentService {
                             .status(payment.getStatus())
                             .buyerName(reservation.getMember().getName())
                             .buyerEmail(reservation.getMember().getEmail())
-                            .performanceTitle(reservation.getPerformanceSeat().getPerformance().getTitle())
+                            .performanceTitle(reservation.getPerformanceSeat().getPerformanceSchedule().getPerformance().getTitle())
                             .createdAt(payment.getCreatedAt())
                             .build();
                 });
