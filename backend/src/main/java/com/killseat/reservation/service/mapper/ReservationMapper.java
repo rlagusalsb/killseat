@@ -13,7 +13,7 @@ public class ReservationMapper {
                 reservation.getReservationId(),
                 reservation.getPerformanceSeat().getPerformanceSeatId(),
                 reservation.getPerformanceSeat().getSeat().getSeatNumber(),
-                reservation.getPerformanceSeat().getPerformance().getTitle(),
+                reservation.getPerformanceSeat().getPerformanceSchedule().getPerformance().getTitle(),
                 reservation.getStatus().name()
         );
     }
@@ -21,8 +21,8 @@ public class ReservationMapper {
     public MyPageReservationDto toMyPageDto(Reservation reservation) {
         return new MyPageReservationDto(
                 reservation.getReservationId(),
-                reservation.getPerformanceSeat().getPerformance().getTitle(),
-                reservation.getPerformanceSeat().getPerformance().getThumbnailUrl(),
+                reservation.getPerformanceSeat().getPerformanceSchedule().getPerformance().getTitle(),
+                reservation.getPerformanceSeat().getPerformanceSchedule().getPerformance().getThumbnailUrl(),
                 buildSeatInfo(reservation),
                 reservation.getStatus().name(),
                 reservation.getCreatedAt()
