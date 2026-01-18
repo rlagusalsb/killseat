@@ -48,7 +48,7 @@ public class ReservationService {
         PerformanceSeat seat = performanceSeatRepository.findById(performanceSeatId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.SEAT_NOT_FOUND));
 
-        if (seat.getPerformance().getStatus() != PerformanceStatus.OPEN) {
+        if (seat.getPerformanceSchedule().getPerformance().getStatus() != PerformanceStatus.OPEN) {
             throw new CustomException(CustomErrorCode.PERFORMANCE_NOT_OPEN);
         }
 
@@ -99,7 +99,7 @@ public class ReservationService {
             throw new CustomException(CustomErrorCode.REJECTED_PERMISSION);
         }
 
-        if (reservation.getPerformanceSeat().getPerformance().getStatus() != PerformanceStatus.OPEN) {
+        if (reservation.getPerformanceSeat().getPerformanceSchedule().getPerformance().getStatus() != PerformanceStatus.OPEN) {
             throw new CustomException(CustomErrorCode.CANNOT_CANCEL_AFTER_CLOSE);
         }
 
