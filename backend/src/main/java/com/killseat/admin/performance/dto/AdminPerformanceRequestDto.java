@@ -1,11 +1,13 @@
 package com.killseat.admin.performance.dto;
 
+import com.killseat.performance.dto.ScheduleRequestDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
@@ -16,7 +18,7 @@ public class AdminPerformanceRequestDto {
     private String content;
     private String location;
     private Long price;
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+    private String thumbnailUrl;
     private int totalSeats;
+    private List<ScheduleRequestDto> schedules;
 }
