@@ -18,14 +18,15 @@ public interface PerformanceSeatRepository extends JpaRepository<PerformanceSeat
     @Query("select ps from PerformanceSeat ps where ps.performanceSeatId = :id")
     Optional<PerformanceSeat> findByIdWithLock(@Param("id") Long id);
 
+    //특정 공연 회차의 모든 좌석 조회
     @Query("""
         select distinct ps
           from PerformanceSeat ps
           join fetch ps.seat
-          join fetch ps.performance
-         where ps.performance.performanceId = :performanceId
+          join fetch ps.performanceSchedule
+         where ps.performanceSchedule.scheduleId = :scheduleId
     """)
-    List<PerformanceSeat> findAllWithSeatByPerformanceId(@Param("performanceId") Long performanceId);
+    List<PerformanceSeat> findAllWithSeatByPerformanceScheduleId(@Param("scheduleId") Long scheduleId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
