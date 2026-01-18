@@ -1,5 +1,7 @@
 package com.killseat.performance.entity;
 
+import com.killseat.common.exception.CustomErrorCode;
+import com.killseat.common.exception.CustomException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -8,6 +10,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "performance")
@@ -32,12 +36,6 @@ public class Performance {
     @Column(nullable = false)
     private Long price;
 
-    @Column(name = "start_time", nullable = false)
-    private LocalDateTime startTime;
-
-    @Column(name = "end_time", nullable = false)
-    private LocalDateTime endTime;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private PerformanceStatus status = PerformanceStatus.BEFORE_OPEN;
@@ -45,45 +43,61 @@ public class Performance {
     @Column(name = "thumbnail_url", length = 255)
     private String thumbnailUrl;
 
+    @OneToMany(mappedBy = "performance", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PerformanceSchedule> schedules = new ArrayList<>();
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 
     @Builder
     private Performance(String title, String content, String location, Long price,
-                        LocalDateTime startTime, LocalDateTime endTime, PerformanceStatus status
-    )
-    {
+                        PerformanceStatus status, String thumbnailUrl,
+                        List<PerformanceSchedule> schedules) {
         this.title = title;
         this.content = content;
         this.location = location;
         this.price = price;
-        this.startTime = startTime;
-        this.endTime = endTime;
+        this.thumbnailUrl = thumbnailUrl;
         this.status = (status != null) ? status : PerformanceStatus.BEFORE_OPEN;
+
+        if (schedules != null) {
+            schedules.forEach(this::addSchedule);
+        }
+    }
+
+    public void addSchedule(PerformanceSchedule schedule) {
+        this.schedules.add(schedule);
+        if (schedule.getPerformance() != this) {
+            schedule.setPerformance(this);
+        }
     }
 
     public void update(String title, String content, String location, Long price,
-                       LocalDateTime startTime, LocalDateTime endTime
-    )
-    {
+                       PerformanceStatus status, String thumbnailUrl,
+                       List<PerformanceSchedule> newSchedules) {
         this.title = title;
         this.content = content;
         this.location = location;
         this.price = price;
-        this.startTime = startTime;
-        this.endTime = endTime;
+        this.status = status;
+        this.thumbnailUrl = thumbnailUrl;
+
+        this.schedules.clear();
+        if (newSchedules != null) {
+            newSchedules.forEach(this::addSchedule);
+        }
     }
 
     public void openSales() {
         if (this.status != PerformanceStatus.BEFORE_OPEN) {
-            throw new IllegalStateException("예매는 시작 전 상태에서만 열 수 있습니다.");
+            throw new CustomException(CustomErrorCode.INVALID_PERFORMANCE_STATUS);
         }
         this.status = PerformanceStatus.OPEN;
     }
 
     public void closeSales() {
         if (this.status != PerformanceStatus.OPEN) {
-            throw new IllegalStateException("예매 진행 중일 때만 종료할 수 있습니다.");
+            throw new CustomException(CustomErrorCode.INVALID_PERFORMANCE_STATUS);
         }
         this.status = PerformanceStatus.CLOSED;
     }
