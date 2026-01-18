@@ -5,6 +5,7 @@ import com.killseat.common.exception.CustomErrorCode;
 import com.killseat.common.exception.CustomException;
 import com.killseat.performance.dto.PerformanceResponseDto;
 import com.killseat.performance.entity.Performance;
+import com.killseat.performance.entity.PerformanceSchedule;
 import com.killseat.performance.entity.PerformanceStatus;
 import com.killseat.performance.repository.PerformanceRepository;
 import com.killseat.performance.service.mapper.PerformanceMapper;
@@ -69,15 +70,11 @@ public class PerformanceService {
     @CacheEvict(value = "performanceList", allEntries = true)
     @Transactional
     public PerformanceResponseDto createByAdmin(AdminPerformanceRequestDto request) {
-        Performance performance = Performance.builder()
-                .title(request.getTitle())
-                .content(request.getContent())
-                .location(request.getLocation())
-                .price(request.getPrice())
-                .startTime(request.getStartTime())
-                .endTime(request.getEndTime())
-                .status(PerformanceStatus.BEFORE_OPEN)
-                .build();
+        if (request.getSchedules() == null || request.getSchedules().isEmpty()) {
+            throw new CustomException(CustomErrorCode.MISSING_SCHEDULE);
+        }
+
+        Performance performance = performanceMapper.toEntity(request);
 
         Performance savedPerformance = performanceRepository.save(performance);
 
@@ -93,13 +90,22 @@ public class PerformanceService {
         Performance performance = performanceRepository.findById(id)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PERFORMANCE_NOT_FOUND));
 
+        List<PerformanceSchedule> newSchedules = request.getSchedules().stream()
+                .map(s -> PerformanceSchedule.builder()
+                        .startTime(s.getStartTime())
+                        .endTime(s.getEndTime())
+                        .performance(performance)
+                        .build())
+                .collect(Collectors.toList());
+
         performance.update(
                 request.getTitle(),
                 request.getContent(),
                 request.getLocation(),
                 request.getPrice(),
-                request.getStartTime(),
-                request.getEndTime()
+                performance.getStatus(),
+                request.getThumbnailUrl(),
+                newSchedules
         );
 
         return performanceMapper.toDto(performance);
