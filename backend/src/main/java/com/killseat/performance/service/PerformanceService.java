@@ -106,7 +106,7 @@ public class PerformanceService {
                 request.getContent(),
                 request.getLocation(),
                 request.getPrice(),
-                performance.getStatus(),
+                request.getStatus(),
                 request.getThumbnailUrl(),
                 newSchedules
         );
