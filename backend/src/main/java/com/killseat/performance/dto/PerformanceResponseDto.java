@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -12,9 +12,10 @@ import java.time.LocalDateTime;
 public class PerformanceResponseDto {
     private Long performanceId;
     private String title;
+    private String content;
+    private String location;
     private Long price;
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
     private String status;
     private String thumbnailUrl;
+    private List<ScheduleResponseDto> schedules;
 }
