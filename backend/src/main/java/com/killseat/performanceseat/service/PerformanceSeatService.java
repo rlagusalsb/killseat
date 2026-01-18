@@ -33,11 +33,13 @@ public class PerformanceSeatService {
             throw new CustomException(CustomErrorCode.SEAT_NOT_FOUND);
         }
 
-        List<PerformanceSeat> performanceSeats = masterSeats.stream()
-                .map(seat -> performanceSeatMapper.toEntity(performance, seat))
-                .collect(Collectors.toList());
+        performance.getSchedules().forEach(schedule -> {
+            List<PerformanceSeat> performanceSeats = masterSeats.stream()
+                    .map(seat -> performanceSeatMapper.toEntity(schedule, seat))
+                    .collect(Collectors.toList());
 
-        performanceSeatRepository.saveAll(performanceSeats);
+            performanceSeatRepository.saveAll(performanceSeats);
+        });
     }
 
     //관리자 전용 특정 좌석 차단
@@ -92,8 +94,8 @@ public class PerformanceSeatService {
 
     //특정 공연 좌석 목록 조회
     @Transactional(readOnly = true)
-    public List<PerformanceSeatResponseDto> getSeatsByPerformance(Long performanceId) {
-        return performanceSeatRepository.findAllWithSeatByPerformanceId(performanceId).stream()
+    public List<PerformanceSeatResponseDto> getSeatsByPerformance(Long scheduleId) {
+        return performanceSeatRepository.findAllWithSeatByPerformanceScheduleId(scheduleId).stream()
                 .map(performanceSeatMapper::toDto)
                 .collect(Collectors.toList());
     }
