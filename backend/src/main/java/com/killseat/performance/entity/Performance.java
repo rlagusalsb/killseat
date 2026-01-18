@@ -82,13 +82,19 @@ public class Performance {
         this.status = status;
         this.thumbnailUrl = thumbnailUrl;
 
-        this.schedules.clear();
-        if (newSchedules != null) {
+        if (newSchedules != null && !newSchedules.isEmpty()) {
+            this.schedules.clear();
             newSchedules.forEach(this::addSchedule);
         }
     }
 
+    public void updateStatus(PerformanceStatus status) {
+        this.status = status;
+    }
+
     public void openSales() {
+        if (this.status == PerformanceStatus.OPEN) return;
+
         if (this.status != PerformanceStatus.BEFORE_OPEN) {
             throw new CustomException(CustomErrorCode.INVALID_PERFORMANCE_STATUS);
         }
