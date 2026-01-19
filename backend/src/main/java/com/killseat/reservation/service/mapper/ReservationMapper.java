@@ -1,5 +1,6 @@
 package com.killseat.reservation.service.mapper;
 
+import com.killseat.admin.reservation.dto.AdminReservationDto;
 import com.killseat.mypage.dto.MyPageReservationDto;
 import com.killseat.reservation.dto.ReservationResponseDto;
 import com.killseat.reservation.entity.Reservation;
@@ -28,6 +29,16 @@ public class ReservationMapper {
                 reservation.getStatus().name(),
                 reservation.getCreatedAt(),
                 reservation.getPerformanceSeat().getPerformanceSchedule().getStartTime()
+        );
+    }
+
+    public AdminReservationDto toAdminDto(Reservation reservation) {
+        return new AdminReservationDto(
+                reservation.getReservationId(),
+                reservation.getMember().getName(),
+                reservation.getPerformanceSeat().getPerformanceSchedule().getPerformance().getTitle(),
+                buildSeatInfo(reservation),
+                reservation.getStatus().name()
         );
     }
 
