@@ -35,7 +35,6 @@ export default function MyReservations() {
 
   const handleCancel = async (reservationId) => {
     if (!window.confirm("예약을 취소하시겠습니까?")) return;
-
     try {
       await api.post(`/api/reservations/${reservationId}/cancel`);
       alert("정상적으로 취소되었습니다.");
@@ -43,6 +42,17 @@ export default function MyReservations() {
     } catch (e) {
       console.error("예약 취소 에러:", e.response?.data);
     }
+  };
+
+  const formatDateTime = (dateTime) => {
+    if (!dateTime) return "-";
+    return new Date(dateTime).toLocaleString("ko-KR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   if (loading) return <p className="myresv-loading">로딩 중...</p>;
@@ -71,6 +81,14 @@ export default function MyReservations() {
                   </span>
                 </div>
                 <div className="myresv-meta">
+                  <div className="myresv-meta-item">
+                    <span className="myresv-meta-label">공연 일시</span>
+                    <span className="myresv-meta-value">{formatDateTime(r.performanceStartTime)}</span>
+                  </div>
+                  <div className="myresv-meta-item">
+                    <span className="myresv-meta-label">장소</span>
+                    <span className="myresv-meta-value">{r.performanceLocation || "-"}</span>
+                  </div>
                   <div className="myresv-meta-item">
                     <span className="myresv-meta-label">좌석</span>
                     <span className="myresv-meta-value">{r.seatInfo}</span>
