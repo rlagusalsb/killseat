@@ -17,9 +17,12 @@ public class PerformanceSeatController {
 
     @GetMapping("/{performanceId}")
     public ResponseEntity<List<PerformanceSeatResponseDto>> getSeatsByPerformance(
-            @PathVariable Long performanceId) {
+            @PathVariable Long performanceId,
+            @RequestParam Long scheduleId
+    )
+    {
         List<PerformanceSeatResponseDto> seats =
-                performanceSeatService.getSeatsByPerformance(performanceId);
+                performanceSeatService.getSeatsByPerformance(scheduleId);
         return ResponseEntity.ok(seats);
     }
 
