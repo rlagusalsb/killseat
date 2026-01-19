@@ -29,5 +29,4 @@ public class AdminPaymentController {
         Page<PaymentResponseDto> payments = paymentService.getAllPaymentsForAdmin(pageable);
         return ResponseEntity.ok(payments);
     }
-
 }

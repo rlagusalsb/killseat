@@ -18,5 +18,6 @@ public class PaymentResponseDto {
     private String buyerEmail;
     private PaymentStatus status;
     private String performanceTitle;
+    private String performanceRound;
     private LocalDateTime createdAt;
 }
