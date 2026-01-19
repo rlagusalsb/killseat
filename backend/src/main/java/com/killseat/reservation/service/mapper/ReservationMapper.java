@@ -6,8 +6,12 @@ import com.killseat.reservation.dto.ReservationResponseDto;
 import com.killseat.reservation.entity.Reservation;
 import org.springframework.stereotype.Component;
 
+import java.time.format.DateTimeFormatter;
+
 @Component
 public class ReservationMapper {
+
+    private static final DateTimeFormatter ROUND_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public ReservationResponseDto toDto(Reservation reservation) {
         return new ReservationResponseDto(
@@ -38,7 +42,11 @@ public class ReservationMapper {
                 reservation.getMember().getName(),
                 reservation.getPerformanceSeat().getPerformanceSchedule().getPerformance().getTitle(),
                 buildSeatInfo(reservation),
-                reservation.getStatus().name()
+                reservation.getStatus().name(),
+                reservation.getPerformanceSeat()
+                        .getPerformanceSchedule()
+                        .getStartTime()
+                        .format(ROUND_FORMATTER)
         );
     }
 
