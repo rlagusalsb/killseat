@@ -19,18 +19,24 @@ export default function AdminReservationList() {
             <th>예매ID</th>
             <th>예매자</th>
             <th>공연명</th>
+            <th>공연 일시</th>
             <th>좌석</th>
             <th>상태</th>
           </tr>
         </thead>
         <tbody>
           {reservations.map(r => (
-            <tr key={r.reservationId}>
+            <tr key={r.reservationId} className={r.status === "CANCELED" ? "row-canceled" : ""}>
               <td>{r.reservationId}</td>
               <td>{r.memberName}</td>
               <td>{r.performanceTitle}</td>
+              <td className="round-text">{r.performanceRound}</td> {/* 포맷팅된 문자열 */}
               <td>{r.seatInfo}</td>
-              <td>{r.status}</td>
+              <td>
+                <span className={`status-badge ${r.status.toLowerCase()}`}>
+                   {r.status === "CONFIRMED" ? "예약완료" : "취소됨"}
+                </span>
+              </td>
             </tr>
           ))}
         </tbody>
