@@ -1,5 +1,6 @@
 package com.killseat.admin.reservation.controller;
 
+import com.killseat.admin.reservation.dto.AdminReservationDto;
 import com.killseat.reservation.dto.ReservationResponseDto;
 import com.killseat.reservation.service.ReservationService;
 import lombok.RequiredArgsConstructor;
@@ -20,11 +21,11 @@ public class AdminReservationController {
     private final ReservationService reservationService;
 
     @GetMapping
-    public ResponseEntity<Page<ReservationResponseDto>> getAllReservations(
+    public ResponseEntity<Page<AdminReservationDto>> getAllReservations(
             @PageableDefault(size = 10, sort = "reservationId", direction = Sort.Direction.DESC) Pageable pageable
     )
     {
-        Page<ReservationResponseDto> reservations = reservationService.getAllReservationsForAdmin(pageable);
+        Page<AdminReservationDto> reservations = reservationService.getAllReservationsForAdmin(pageable);
         return ResponseEntity.ok(reservations);
     }
 
