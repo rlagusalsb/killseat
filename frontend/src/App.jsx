@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import MyReservation from "./pages/MyReservations";
 import Login from "./pages/Login";
 import Performances from "./pages/Performance";
+import PerformanceDetail from "./pages/PerformanceDetail";
 import PerformanceSeats from "./pages/PerformanceSeats";
 import Board from "./pages/Board";
 import SignUp from "./pages/SignUp";
@@ -13,7 +14,7 @@ import PostDetail from "./pages/PostDetail";
 import PostEdit from "./pages/PostEdit";
 import Waiting from "./pages/Waiting";
 import AdminLayout from "./pages/admin/AdminLayout";
-import AdminMemberList from "./pages/admin/AdminMemberList"
+import AdminMemberList from "./pages/admin/AdminMemberList";
 import AdminPaymentList from "./pages/admin/AdminPaymentList";
 import AdminPerformanceList from "./pages/admin/AdminPerformanceList";
 import AdminReservationList from "./pages/admin/AdminReservationList";
@@ -39,7 +40,8 @@ function App() {
             <Route path="/my-reservations" element={<MyReservation />} />
             <Route path="/login" element={<Login />} />
             <Route path="/performances" element={<Performances />} />
-            <Route path="/performances/:performanceId/seats" element={<PerformanceSeats/>} />
+            <Route path="/performance/:id" element={<PerformanceDetail />} />
+            <Route path="/performances/:performanceId/seats" element={<PerformanceSeats />} />
             <Route path="/board" element={<Board />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/posts/write" element={<PostWrite />} />
