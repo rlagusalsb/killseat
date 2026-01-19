@@ -4,6 +4,7 @@ import com.killseat.admin.performance.dto.AdminPerformanceRequestDto;
 import com.killseat.common.exception.CustomErrorCode;
 import com.killseat.common.exception.CustomException;
 import com.killseat.performance.dto.PerformanceResponseDto;
+import com.killseat.performance.dto.ScheduleRequestDto;
 import com.killseat.performance.entity.Performance;
 import com.killseat.performance.entity.PerformanceSchedule;
 import com.killseat.performance.entity.PerformanceStatus;
@@ -97,21 +98,30 @@ public class PerformanceService {
                 request.getPrice(),
                 request.getStatus(),
                 request.getThumbnailUrl(),
-                null
+                performance.getSchedules()
         );
 
         if (request.getSchedules() != null) {
-            performance.getSchedules().clear();
+            List<PerformanceSchedule> existingSchedules = performance.getSchedules();
+            List<ScheduleRequestDto> requestedSchedules = request.getSchedules();
 
-            List<PerformanceSchedule> updatedSchedules = request.getSchedules().stream()
-                    .map(s -> PerformanceSchedule.builder()
-                            .startTime(s.getStartTime())
-                            .endTime(s.getEndTime())
+            for (int i = 0; i < requestedSchedules.size(); i++) {
+                ScheduleRequestDto reqDto = requestedSchedules.get(i);
+                if (i < existingSchedules.size()) {
+                    existingSchedules.get(i).updateTime(reqDto.getStartTime(), reqDto.getEndTime());
+                } else {
+                    PerformanceSchedule newSchedule = PerformanceSchedule.builder()
+                            .startTime(reqDto.getStartTime())
+                            .endTime(reqDto.getEndTime())
                             .performance(performance)
-                            .build())
-                    .collect(Collectors.toList());
+                            .build();
+                    existingSchedules.add(newSchedule);
+                }
+            }
 
-            performance.getSchedules().addAll(updatedSchedules);
+            if (existingSchedules.size() > requestedSchedules.size()) {
+                existingSchedules.subList(requestedSchedules.size(), existingSchedules.size()).clear();
+            }
         }
 
         return performanceMapper.toDto(performance);
