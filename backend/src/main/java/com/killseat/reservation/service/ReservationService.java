@@ -1,5 +1,6 @@
 package com.killseat.reservation.service;
 
+import com.killseat.admin.reservation.dto.AdminReservationDto;
 import com.killseat.common.exception.CustomErrorCode;
 import com.killseat.common.exception.CustomException;
 import com.killseat.member.entity.Member;
@@ -126,9 +127,9 @@ public class ReservationService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ReservationResponseDto> getAllReservationsForAdmin(Pageable pageable) {
+    public Page<AdminReservationDto> getAllReservationsForAdmin(Pageable pageable) {
         return reservationRepository.findAll(pageable)
-                .map(reservationMapper::toDto);
+                .map(reservationMapper::toAdminDto);
     }
 
     @Transactional
