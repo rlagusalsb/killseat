@@ -1,6 +1,6 @@
 package com.killseat.admin.payment.controller;
 
-import com.killseat.admin.payment.dto.PaymentResponseDto;
+import com.killseat.admin.payment.dto.AdminPaymentResponseDto;
 import com.killseat.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,11 +22,11 @@ public class AdminPaymentController {
     private final PaymentService paymentService;
 
     @GetMapping
-    public ResponseEntity<Page<PaymentResponseDto>> getAllPayments(
+    public ResponseEntity<Page<AdminPaymentResponseDto>> getAllPayments(
             @PageableDefault(size = 10, sort = "paymentId", direction = Sort.Direction.DESC)Pageable pageable
     )
     {
-        Page<PaymentResponseDto> payments = paymentService.getAllPaymentsForAdmin(pageable);
+        Page<AdminPaymentResponseDto> payments = paymentService.getAllPaymentsForAdmin(pageable);
         return ResponseEntity.ok(payments);
     }
 }

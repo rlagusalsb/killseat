@@ -1,6 +1,6 @@
 package com.killseat.payment.service;
 
-import com.killseat.admin.payment.dto.PaymentResponseDto;
+import com.killseat.admin.payment.dto.AdminPaymentResponseDto;
 import com.killseat.common.exception.CustomErrorCode;
 import com.killseat.common.exception.CustomException;
 import com.killseat.payment.PortOneClient;
@@ -178,11 +178,11 @@ public class PaymentService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PaymentResponseDto> getAllPaymentsForAdmin(Pageable pageable) {
+    public Page<AdminPaymentResponseDto> getAllPaymentsForAdmin(Pageable pageable) {
         return paymentRepository.findAll(pageable)
                 .map(payment -> {
                     Reservation reservation = payment.getReservation();
-                    return PaymentResponseDto.builder()
+                    return AdminPaymentResponseDto.builder()
                             .paymentId(payment.getPaymentId())
                             .merchantUid(payment.getMerchantUid())
                             .amount(payment.getAmount())

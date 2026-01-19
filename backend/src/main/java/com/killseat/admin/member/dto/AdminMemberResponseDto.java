@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 @AllArgsConstructor
-public class MemberResponseDto {
+public class AdminMemberResponseDto {
     private Long memberId;
     private String email;
     private String name;

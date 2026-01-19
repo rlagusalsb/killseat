@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 @AllArgsConstructor
-public class PaymentResponseDto {
+public class AdminPaymentResponseDto {
     private Long paymentId;
     private String merchantUid;
     private Long amount;

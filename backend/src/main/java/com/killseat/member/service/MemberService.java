@@ -1,6 +1,6 @@
 package com.killseat.member.service;
 
-import com.killseat.admin.member.dto.MemberResponseDto;
+import com.killseat.admin.member.dto.AdminMemberResponseDto;
 import com.killseat.common.exception.CustomErrorCode;
 import com.killseat.common.exception.CustomException;
 import com.killseat.member.dto.SignupRequestDto;
@@ -43,9 +43,9 @@ public class MemberService {
     }
 
     @Transactional(readOnly = true)
-    public Page<MemberResponseDto> getAllMembers(Pageable pageable) {
+    public Page<AdminMemberResponseDto> getAllMembers(Pageable pageable) {
         return memberRepository.findAll(pageable)
-                .map(member -> MemberResponseDto.builder()
+                .map(member -> AdminMemberResponseDto.builder()
                         .memberId(member.getMemberId())
                         .email(member.getEmail())
                         .name(member.getName())

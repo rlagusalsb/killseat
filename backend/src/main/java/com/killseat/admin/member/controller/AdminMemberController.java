@@ -1,6 +1,6 @@
 package com.killseat.admin.member.controller;
 
-import com.killseat.admin.member.dto.MemberResponseDto;
+import com.killseat.admin.member.dto.AdminMemberResponseDto;
 import com.killseat.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,11 +22,11 @@ public class AdminMemberController {
     private final MemberService memberService;
 
     @GetMapping
-    public ResponseEntity<Page<MemberResponseDto>> getAllMembers(
+    public ResponseEntity<Page<AdminMemberResponseDto>> getAllMembers(
             @PageableDefault(size = 10, sort = "memberId", direction = Sort.Direction.DESC) Pageable pageable
     )
     {
-        Page<MemberResponseDto> members = memberService.getAllMembers(pageable);
+        Page<AdminMemberResponseDto> members = memberService.getAllMembers(pageable);
         return ResponseEntity.ok(members);
     }
 }

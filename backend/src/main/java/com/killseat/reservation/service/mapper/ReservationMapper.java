@@ -1,6 +1,6 @@
 package com.killseat.reservation.service.mapper;
 
-import com.killseat.admin.reservation.dto.AdminReservationDto;
+import com.killseat.admin.reservation.dto.AdminReservationResponseDto;
 import com.killseat.mypage.dto.MyPageReservationDto;
 import com.killseat.reservation.dto.ReservationResponseDto;
 import com.killseat.reservation.entity.Reservation;
@@ -36,8 +36,8 @@ public class ReservationMapper {
         );
     }
 
-    public AdminReservationDto toAdminDto(Reservation reservation) {
-        return new AdminReservationDto(
+    public AdminReservationResponseDto toAdminDto(Reservation reservation) {
+        return new AdminReservationResponseDto(
                 reservation.getReservationId(),
                 reservation.getMember().getName(),
                 reservation.getPerformanceSeat().getPerformanceSchedule().getPerformance().getTitle(),

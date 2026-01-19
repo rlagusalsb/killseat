@@ -3,11 +3,9 @@ package com.killseat.admin.reservation.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
-
 @Getter
 @AllArgsConstructor
-public class AdminReservationDto {
+public class AdminReservationResponseDto {
     private Long reservationId;
     private String memberName;
     private String performanceTitle;
