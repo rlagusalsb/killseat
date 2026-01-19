@@ -23,9 +23,11 @@ public class ReservationMapper {
                 reservation.getReservationId(),
                 reservation.getPerformanceSeat().getPerformanceSchedule().getPerformance().getTitle(),
                 reservation.getPerformanceSeat().getPerformanceSchedule().getPerformance().getThumbnailUrl(),
+                reservation.getPerformanceSeat().getPerformanceSchedule().getPerformance().getLocation(),
                 buildSeatInfo(reservation),
                 reservation.getStatus().name(),
-                reservation.getCreatedAt()
+                reservation.getCreatedAt(),
+                reservation.getPerformanceSeat().getPerformanceSchedule().getStartTime()
         );
     }
 
