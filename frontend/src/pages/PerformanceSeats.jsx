@@ -1,11 +1,15 @@
 import "../css/PerformanceSeats.css";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import api from "../api/client";
 
 export default function PerformanceSeats() {
   const { performanceId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const queryParams = new URLSearchParams(location.search);
+  const scheduleId = queryParams.get("scheduleId");
 
   const [performance, setPerformance] = useState(null);
   const [seats, setSeats] = useState([]);
@@ -22,13 +26,19 @@ export default function PerformanceSeats() {
   }, []);
 
   useEffect(() => {
+    if (!scheduleId) {
+      setError("회차 정보가 없습니다.");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError("");
     setSelectedSeatId(null);
 
     Promise.all([
       api.get(`/api/performances/${performanceId}`),
-      api.get(`/api/performance-seats/${performanceId}`),
+      api.get(`/api/performance-seats/${performanceId}?scheduleId=${scheduleId}`),
     ])
       .then(([pRes, sRes]) => {
         setPerformance(pRes.data);
@@ -38,7 +48,7 @@ export default function PerformanceSeats() {
         setError("좌석 정보를 불러오지 못했습니다.");
       })
       .finally(() => setLoading(false));
-  }, [performanceId]);
+  }, [performanceId, scheduleId]);
 
   const sortedSeats = useMemo(() => {
     const parse = (seatNumber) => {
@@ -59,6 +69,16 @@ export default function PerformanceSeats() {
     });
   }, [seats]);
 
+  const groupedSeats = useMemo(() => {
+    const groups = {};
+    sortedSeats.forEach((seat) => {
+      const rowLabel = String(seat.seatNumber).match(/^[A-Za-z]+/)?.[0] || "?";
+      if (!groups[rowLabel]) groups[rowLabel] = [];
+      groups[rowLabel].push(seat);
+    });
+    return groups;
+  }, [sortedSeats]);
+
   const selectedSeat = useMemo(() => {
     if (!selectedSeatId) return null;
     return sortedSeats.find((s) => s.performanceSeatId === selectedSeatId) || null;
@@ -75,124 +95,75 @@ export default function PerformanceSeats() {
 
   const formatPrice = (price) => {
     if (price == null) return "-";
-    const n = Number(price);
-    if (Number.isNaN(n)) return "-";
-    return `${n.toLocaleString()}원`;
+    return `${Number(price).toLocaleString()}원`;
   };
 
   const onPay = async () => {
     if (!selectedSeatId || !selectedSeat) return;
-
-    const ok = window.confirm("결제하시겠습니까?");
-    if (!ok) return;
-
-    if (!window.IMP) {
-      alert("포트원 라이브러리가 로드되지 않았습니다.");
-      return;
-    }
+    if (!window.confirm("결제하시겠습니까?")) return;
+    if (!window.IMP) return alert("결제 라이브러리 로드 실패");
 
     setPaying(true);
     let reservationId = null;
-    let preparedMerchantUid = null;
 
     try {
       const reservationRes = await api.post(`/api/reservations/${selectedSeatId}`);
       reservationId = reservationRes.data?.reservationId ?? reservationRes.data?.id;
       
-      if (!reservationId) throw new Error("예약 ID 생성 실패");
-
       const prepareRes = await api.post("/api/payments/prepare", {
         reservationId,
         method: "CARD",
       });
 
-      preparedMerchantUid = prepareRes.data?.merchantUid ?? prepareRes.data?.merchant_uid;
-      const amount = prepareRes.data?.amount;
-      const name = prepareRes.data?.name ?? performance?.title ?? "공연 티켓 결제";
-
-      if (!preparedMerchantUid || typeof amount !== "number") {
-        throw new Error("결제 준비 데이터가 올바르지 않습니다.");
-      }
-
+      const { merchantUid, amount, name } = prepareRes.data;
       const userInfo = JSON.parse(localStorage.getItem("user") || "{}");
 
       window.IMP.request_pay(
         {
           pg: "kakaopay.TC0ONETIME",
           pay_method: "card",
-          merchant_uid: preparedMerchantUid,
-          name,
+          merchant_uid: merchantUid,
+          name: name || performance?.title,
           amount,
           buyer_email: userInfo.email || "",
           buyer_name: userInfo.name || "구매자",
-          buyer_tel: userInfo.phone || "",
         },
         async (rsp) => {
-          try {
-            if (!rsp?.success) {
-              if (reservationId) await api.delete(`/api/reservations/${reservationId}`);
-              alert(rsp?.error_msg || "결제가 취소되었습니다.");
-              setPaying(false);
-              return;
-            }
-
+          if (rsp?.success) {
             await api.post("/api/payments/confirm", {
               impUid: rsp.imp_uid,
-              merchantUid: preparedMerchantUid,
+              merchantUid,
             });
-
-            alert("결제가 완료되었습니다.");
+            alert("결제 완료");
             navigate("/my-reservations");
-          } catch (e) {
-            console.error(e);
-            alert("결제 검증 중 오류가 발생했습니다.");
-          } finally {
-            setPaying(false);
+          } else {
+            if (reservationId) await api.delete(`/api/reservations/${reservationId}`);
+            alert(rsp?.error_msg || "결제 취소");
           }
+          setPaying(false);
         }
       );
     } catch (err) {
-      if (reservationId) {
-        await api.delete(`/api/reservations/${reservationId}`).catch(() => {});
-      }
-      console.error("Payment Error:", err.response?.data || err.message);
-      alert("결제 준비 중 오류가 발생했습니다.");
+      console.error(err);
+      if (reservationId) await api.delete(`/api/reservations/${reservationId}`).catch(() => {});
+      alert("오류 발생");
       setPaying(false);
     }
   };
 
-  if (loading) {
-    return (
-      <main className="seat-page">
-        <p className="seat-helper">좌석 상태를 불러오는 중...</p>
-      </main>
-    );
-  }
-
-  if (error) {
-    return (
-      <main className="seat-page">
-        <p className="seat-helper seat-error">{error}</p>
-        <button className="seat-back" onClick={() => navigate(-1)}>뒤로가기</button>
-      </main>
-    );
-  }
+  if (loading) return <main className="seat-page"><p className="seat-helper">로딩 중...</p></main>;
+  if (error) return <main className="seat-page"><p className="seat-helper">{error}</p></main>;
 
   return (
     <main className="seat-page">
       <section className="seat-container">
         <header className="seat-header">
-          <img
-            className="seat-thumbnail"
-            src={performance?.thumbnailUrl || "/placeholder.jpg"}
-            alt="performance"
-            onError={(e) => { e.currentTarget.src = "/placeholder.jpg"; }}
-          />
+          <img className="seat-thumbnail" src={performance?.thumbnailUrl || "/placeholder.jpg"} alt="poster" />
           <div className="seat-header-info">
             <h1 className="seat-title">{performance?.title}</h1>
             <p className="seat-meta">
-              {performance?.startTime ? new Date(performance.startTime).toLocaleString() : "-"}
-              {" · "}
+               회차번호: {scheduleId}
+               {" · "}
               <span className="seat-price">{formatPrice(performance?.price)}</span>
             </p>
           </div>
@@ -200,21 +171,24 @@ export default function PerformanceSeats() {
 
         <div className="stage">STAGE</div>
 
-        <div className="seat-grid">
-          {sortedSeats.map((s) => {
-            const available = isAvailable(s);
-            const selected = selectedSeatId === s.performanceSeatId;
-            return (
-              <button
-                key={s.performanceSeatId}
-                className={`seat-item ${available ? "available" : "reserved"} ${selected ? "selected" : ""}`}
-                disabled={!available || paying}
-                onClick={() => onClickSeat(s)}
-              >
-                {s.seatNumber}
-              </button>
-            );
-          })}
+        <div className="seat-area">
+          {Object.entries(groupedSeats).map(([rowLabel, rowSeats]) => (
+            <div key={rowLabel} className="seat-row">
+              <div className="seat-row-label">{rowLabel}</div>
+              <div className="seat-row-items">
+                {rowSeats.map((s) => (
+                  <button
+                    key={s.performanceSeatId}
+                    className={`seat-item ${isAvailable(s) ? "available" : "reserved"} ${selectedSeatId === s.performanceSeatId ? "selected" : ""}`}
+                    disabled={!isAvailable(s) || paying}
+                    onClick={() => onClickSeat(s)}
+                  >
+                    {s.seatNumber.replace(/^[A-Za-z]+/, "")}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
 
         <footer className="seat-footer">
@@ -223,9 +197,9 @@ export default function PerformanceSeats() {
             <span className="seat-summary-value">{selectedSeat ? selectedSeat.seatNumber : "-"}</span>
           </div>
           <div className="seat-actions">
-            <button className="seat-back" onClick={() => navigate(-1)} disabled={paying}>공연 목록</button>
+            <button className="seat-back" onClick={() => navigate(-1)} disabled={paying}>뒤로가기</button>
             <button className="seat-pay" disabled={!selectedSeatId || paying} onClick={onPay}>
-              {paying ? "결제 진행 중..." : "결제하기"}
+              {paying ? "진행 중..." : "결제하기"}
             </button>
           </div>
         </footer>
