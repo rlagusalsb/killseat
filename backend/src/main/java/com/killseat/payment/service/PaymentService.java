@@ -5,7 +5,7 @@ import com.killseat.common.exception.CustomErrorCode;
 import com.killseat.common.exception.CustomException;
 import com.killseat.payment.PortOneClient;
 import com.killseat.payment.dto.*;
-        import com.killseat.payment.entity.Payment;
+import com.killseat.payment.entity.Payment;
 import com.killseat.payment.entity.PaymentStatus;
 import com.killseat.payment.repository.PaymentRepository;
 import com.killseat.performanceseat.entity.PerformanceSeatStatus;
@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 @Slf4j
@@ -32,6 +33,8 @@ public class PaymentService {
     private final ReservationRepository reservationRepository;
     private final PerformanceSeatRepository performanceSeatRepository;
     private final PortOneClient portOneClient;
+
+    private static final DateTimeFormatter ROUND_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     //결제 준비
     @Transactional
@@ -182,6 +185,12 @@ public class PaymentService {
         return paymentRepository.findAll(pageable)
                 .map(payment -> {
                     Reservation reservation = payment.getReservation();
+
+                    String roundInfo = reservation.getPerformanceSeat()
+                            .getPerformanceSchedule()
+                            .getStartTime()
+                            .format(ROUND_FORMATTER);
+
                     return AdminPaymentResponseDto.builder()
                             .paymentId(payment.getPaymentId())
                             .merchantUid(payment.getMerchantUid())
@@ -190,6 +199,7 @@ public class PaymentService {
                             .buyerName(reservation.getMember().getName())
                             .buyerEmail(reservation.getMember().getEmail())
                             .performanceTitle(reservation.getPerformanceSeat().getPerformanceSchedule().getPerformance().getTitle())
+                            .performanceRound(roundInfo)
                             .createdAt(payment.getCreatedAt())
                             .build();
                 });
