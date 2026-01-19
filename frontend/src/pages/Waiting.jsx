@@ -9,7 +9,8 @@ export default function Waiting() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
-  const performanceId = searchParams.get("performanceId") || location.state?.performanceId;
+  const performanceId = searchParams.get("performanceId");
+  const scheduleId = searchParams.get("scheduleId");
 
   const [loading, setLoading] = useState(true);
   const [joined, setJoined] = useState(false);
@@ -28,7 +29,7 @@ export default function Waiting() {
 
   const goReservation = () => {
     cleanup();
-    navigate(`/performances/${performanceId}/seats`, { replace: true });
+    navigate(`/performances/${performanceId}/seats?scheduleId=${scheduleId}`, { replace: true });
   };
 
   const fetchPerformanceInfo = async () => {
@@ -65,15 +66,13 @@ export default function Waiting() {
   };
 
   const connectSSE = () => {
-    const userInfo = JSON.parse(localStorage.getItem("user") || "{}");
-    const mId = userInfo.memberId || userInfo.id || "1";
     const baseURL = import.meta.env.VITE_API_URL || "http://localhost:8080";
-    const url = `${baseURL}/api/queue/subscribe/${mId}`;
+    const url = `${baseURL}/api/queue/subscribe/${performanceId}`;
 
     try {
       const es = new EventSource(url, { withCredentials: true });
       sseRef.current = es;
-      es.addEventListener("update", (event) => {
+      es.addEventListener("queueStatus", (event) => {
         try {
           const data = JSON.parse(event.data);
           applyStatusData(data);
@@ -88,9 +87,9 @@ export default function Waiting() {
   };
 
   const joinQueue = async () => {
-    if (!performanceId) {
+    if (!performanceId || !scheduleId) {
       setStatus("ERROR");
-      setMessage("공연 정보를 찾을 수 없습니다.");
+      setMessage("공연 또는 회차 정보가 없습니다.");
       setLoading(false);
       return;
     }
@@ -153,14 +152,13 @@ export default function Waiting() {
           <img src={performance.thumbnailUrl || "/placeholder.jpg"} alt="thumb" className="mini-thumbnail" />
           <div className="mini-info">
             <h4>{performance.title}</h4>
-            <p>{new Date(performance.startTime).toLocaleString()}</p>
+            <p>회차 ID: {scheduleId}</p>
           </div>
         </div>
       )}
 
       <div className="waiting-card">
         <h2 className="waiting-title">예약 대기열</h2>
-        
         <div className="waiting-box">
           <div className="waiting-label">내 앞 대기 인원</div>
           <div className="waiting-big">
@@ -168,12 +166,9 @@ export default function Waiting() {
             <span>명</span>
           </div>
         </div>
-
         <p className="waiting-sub">
-          현재 접속 인원이 많아 대기 중입니다.<br />
           잠시만 기다려 주시면 예약 페이지로 연결됩니다.
         </p>
-
         <div className="waiting-actions">
           <button className="btn-cancel" onClick={() => navigate("/performances")}>
             대기 취소
