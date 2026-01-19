@@ -37,4 +37,9 @@ public class PerformanceSchedule {
     public void setPerformance(Performance performance) {
         this.performance = performance;
     }
+
+    public void updateTime(LocalDateTime startTime, LocalDateTime endTime) {
+        this.startTime = startTime;
+        this.endTime = endTime;
+    }
 }
