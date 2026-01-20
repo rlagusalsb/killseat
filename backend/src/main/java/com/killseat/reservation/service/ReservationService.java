@@ -46,22 +46,18 @@ public class ReservationService {
 
     @Transactional
     public ReservationResponseDto reserveSeat(Long performanceSeatId, Long memberId) {
-        PerformanceSeat seat = performanceSeatRepository.findById(performanceSeatId)
+        PerformanceSeat seat = performanceSeatRepository.findByIdWithLock(performanceSeatId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.SEAT_NOT_FOUND));
 
         if (seat.getPerformanceSchedule().getPerformance().getStatus() != PerformanceStatus.OPEN) {
             throw new CustomException(CustomErrorCode.PERFORMANCE_NOT_OPEN);
         }
 
-        int held = performanceSeatRepository.updateStatusIfMatch(
-                performanceSeatId,
-                PerformanceSeatStatus.AVAILABLE,
-                PerformanceSeatStatus.HELD
-        );
-
-        if (held == 0) {
+        if (seat.getStatus() != PerformanceSeatStatus.AVAILABLE) {
             throw new CustomException(CustomErrorCode.SEAT_ALREADY_OCCUPIED);
         }
+
+        seat.updateStatus(PerformanceSeatStatus.HELD);
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
@@ -75,20 +71,10 @@ public class ReservationService {
                 .expiresAt(now.plusMinutes(HOLD_MINUTES))
                 .build();
 
-        try {
-            reservationRepository.save(reservation);
+        reservationRepository.save(reservation);
 
-            Reservation detail = reservationRepository.findDetailById(reservation.getReservationId());
-            return reservationMapper.toDto(detail);
-
-        } catch (RuntimeException e) {
-            performanceSeatRepository.updateStatusIfMatch(
-                    performanceSeatId,
-                    PerformanceSeatStatus.HELD,
-                    PerformanceSeatStatus.AVAILABLE
-            );
-            throw e;
-        }
+        Reservation detail = reservationRepository.findDetailById(reservation.getReservationId());
+        return reservationMapper.toDto(detail);
     }
 
     @Transactional
