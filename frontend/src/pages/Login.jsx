@@ -1,4 +1,4 @@
-import "../css/login.css";
+import "../css/Login.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import api from "../api/client";
