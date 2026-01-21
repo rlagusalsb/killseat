@@ -27,3 +27,9 @@ bin/
 # Misc
 *.swp
 *.swo
+
+# MySQL data files
+**/mysql_data/
+**/ib_redo*
+**/ib_16384*
+**/*.dblwr
