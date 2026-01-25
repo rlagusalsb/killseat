@@ -12,6 +12,7 @@ import com.killseat.performance.repository.PerformanceRepository;
 import com.killseat.performance.service.mapper.PerformanceMapper;
 import com.killseat.performanceseat.service.PerformanceSeatService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "performance.cache-enabled", havingValue = "true", matchIfMissing = true)
 public class CachePerformanceService implements PerformanceService {
 
     private final PerformanceRepository performanceRepository;
