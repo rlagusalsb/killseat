@@ -19,7 +19,6 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 #환경 설정 파일 복사
-COPY .env .env
 COPY --from=build /app/build/libs/*.jar app.jar
 
 EXPOSE 8080
