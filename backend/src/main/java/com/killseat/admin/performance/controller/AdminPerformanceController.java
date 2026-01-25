@@ -2,7 +2,7 @@ package com.killseat.admin.performance.controller;
 
 import com.killseat.admin.performance.dto.AdminPerformanceRequestDto;
 import com.killseat.performance.dto.PerformanceResponseDto;
-import com.killseat.performance.service.PerformanceService;
+import com.killseat.performance.service.CachePerformanceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,7 +16,7 @@ import java.util.List;
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminPerformanceController {
 
-    private final PerformanceService performanceService;
+    private final CachePerformanceService performanceService;
 
     @PostMapping
     public ResponseEntity<PerformanceResponseDto> createPerformance(@RequestBody AdminPerformanceRequestDto request) {
