@@ -2,11 +2,13 @@ package com.killseat.performance.service;
 
 import com.killseat.admin.performance.dto.AdminPerformanceRequestDto;
 import com.killseat.performance.dto.PerformanceResponseDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface PerformanceService {
-    List<PerformanceResponseDto> getActivePerformances();
+    Page<PerformanceResponseDto> getActivePerformances(Pageable pageable);
     PerformanceResponseDto getOne(Long id);
     PerformanceResponseDto getOneForAdmin(Long id);
     List<PerformanceResponseDto> getAllForAdmin();
