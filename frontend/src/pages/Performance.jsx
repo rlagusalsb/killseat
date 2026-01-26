@@ -11,7 +11,10 @@ export default function Performance() {
 
   useEffect(() => {
     api.get("/api/performances")
-      .then((res) => setPerformances(Array.isArray(res.data) ? res.data : []))
+      .then((res) => {
+        const data = res.data.content || res.data; 
+        setPerformances(Array.isArray(data) ? data : []);
+      })
       .catch((err) => {
         setError("공연 목록을 불러오지 못했습니다.");
         console.error(err);
