@@ -3,10 +3,12 @@ package com.killseat.performance.controller;
 import com.killseat.performance.dto.PerformanceResponseDto;
 import com.killseat.performance.service.PerformanceService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/performances")
@@ -16,8 +18,13 @@ public class PerformanceController {
     private final PerformanceService performanceService;
 
     @GetMapping
-    public ResponseEntity<List<PerformanceResponseDto>> getActivePerformances() {
-        return ResponseEntity.ok(performanceService.getActivePerformances());
+    public ResponseEntity<Page<PerformanceResponseDto>> getActivePerformances(
+            @PageableDefault(size = 20,
+            sort = "createdAt",
+            direction = Sort.Direction.DESC)Pageable pageable
+    )
+    {
+        return ResponseEntity.ok(performanceService.getActivePerformances(pageable));
     }
 
     @GetMapping("/{id}")
