@@ -66,7 +66,7 @@ export default function Waiting() {
   };
 
   const connectSSE = () => {
-    const baseURL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+    const baseURL = import.meta.env.VITE_API_URL;
     const url = `${baseURL}/api/queue/subscribe/${performanceId}`;
 
     try {
