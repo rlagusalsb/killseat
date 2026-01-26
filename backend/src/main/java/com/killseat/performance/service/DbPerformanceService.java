@@ -13,6 +13,8 @@ import com.killseat.performance.service.mapper.PerformanceMapper;
 import com.killseat.performanceseat.service.PerformanceSeatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,10 +33,9 @@ public class DbPerformanceService implements PerformanceService {
     //OPEN 상태인 공연들만 조회
     @Override
     @Transactional(readOnly = true)
-    public List<PerformanceResponseDto> getActivePerformances() {
-        return performanceRepository.findAllByStatus(PerformanceStatus.OPEN).stream()
-                .map(performanceMapper::toDto)
-                .collect(Collectors.toList());
+    public Page<PerformanceResponseDto> getActivePerformances(Pageable pageable) {
+        return performanceRepository.findAllByStatus(PerformanceStatus.OPEN, pageable)
+                .map(performanceMapper::toDto);
     }
 
     //공연 상세 조회
