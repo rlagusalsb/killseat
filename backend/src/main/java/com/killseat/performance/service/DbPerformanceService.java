@@ -3,6 +3,7 @@ package com.killseat.performance.service;
 import com.killseat.admin.performance.dto.AdminPerformanceRequestDto;
 import com.killseat.common.exception.CustomErrorCode;
 import com.killseat.common.exception.CustomException;
+import com.killseat.performance.dto.PageResponse;
 import com.killseat.performance.dto.PerformanceResponseDto;
 import com.killseat.performance.dto.ScheduleRequestDto;
 import com.killseat.performance.entity.Performance;
@@ -33,9 +34,11 @@ public class DbPerformanceService implements PerformanceService {
     //OPEN 상태인 공연들만 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<PerformanceResponseDto> getActivePerformances(Pageable pageable) {
-        return performanceRepository.findAllByStatus(PerformanceStatus.OPEN, pageable)
+    public PageResponse<PerformanceResponseDto> getActivePerformances(Pageable pageable) {
+        Page<PerformanceResponseDto> page = performanceRepository.findAllByStatus(PerformanceStatus.OPEN, pageable)
                 .map(performanceMapper::toDto);
+
+        return new PageResponse<>(page);
     }
 
     //공연 상세 조회
