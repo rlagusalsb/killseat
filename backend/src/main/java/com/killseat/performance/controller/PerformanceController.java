@@ -1,5 +1,6 @@
 package com.killseat.performance.controller;
 
+import com.killseat.performance.dto.PageResponse;
 import com.killseat.performance.dto.PerformanceResponseDto;
 import com.killseat.performance.service.PerformanceService;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ public class PerformanceController {
     private final PerformanceService performanceService;
 
     @GetMapping
-    public ResponseEntity<Page<PerformanceResponseDto>> getActivePerformances(
+    public ResponseEntity<PageResponse<PerformanceResponseDto>> getActivePerformances(
             @PageableDefault(size = 20,
             sort = "createdAt",
             direction = Sort.Direction.DESC)Pageable pageable
