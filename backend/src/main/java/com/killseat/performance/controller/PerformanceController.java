@@ -4,7 +4,6 @@ import com.killseat.performance.dto.PageResponse;
 import com.killseat.performance.dto.PerformanceResponseDto;
 import com.killseat.performance.service.PerformanceService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
