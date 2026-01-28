@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { EventSourcePolyfill } from "event-source-polyfill";
 import api from "../api/client";
 import { token } from "../auth/token";
 import "../css/Waiting.css";
@@ -23,8 +24,14 @@ export default function Waiting() {
   const pollRef = useRef(null);
 
   const cleanup = () => {
-    if (sseRef.current) { sseRef.current.close(); sseRef.current = null; }
-    if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+    if (sseRef.current) {
+      sseRef.current.close();
+      sseRef.current = null;
+    }
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
   };
 
   const goReservation = () => {
@@ -47,16 +54,20 @@ export default function Waiting() {
       const currentRank = Number(rawPosition);
       const aheadCount = currentRank - 1;
       setPositionAhead(aheadCount < 0 ? 0 : aheadCount);
-      if (currentRank <= 1) goReservation();
+      if (currentRank <= 0) goReservation();
     }
     if (data?.status === "ENTER" || data?.canEnter === true) goReservation();
   };
 
   const fetchStatus = async () => {
     try {
-      const res = await api.get("/api/queue/status", { params: { performanceId } });
+      const res = await api.get("/api/queue/status", { 
+        params: { performanceId, scheduleId } 
+      });
       applyStatusData(res.data);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const startPolling = () => {
@@ -66,12 +77,25 @@ export default function Waiting() {
   };
 
   const connectSSE = () => {
-    const baseURL = import.meta.env.VITE_API_URL;
-    const url = `${baseURL}/api/queue/subscribe/${performanceId}`;
+    const baseURL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+    const url = `${baseURL}/api/queue/subscribe/${performanceId}/${scheduleId}`;
+    const accessToken = token.getAccess();
 
     try {
-      const es = new EventSource(url, { withCredentials: true });
+      const es = new EventSourcePolyfill(url, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        },
+        withCredentials: true,
+        heartbeatTimeout: 1800000 
+      });
+
       sseRef.current = es;
+
+      es.addEventListener("connect", (e) => {
+        console.log("SSE Connected:", e.data);
+      });
+
       es.addEventListener("queueStatus", (event) => {
         try {
           const data = JSON.parse(event.data);
@@ -81,20 +105,33 @@ export default function Waiting() {
           if (!Number.isNaN(n)) applyStatusData({ rank: n });
         }
       });
+
       es.addEventListener("proceed", () => goReservation());
-      es.onerror = () => { cleanup(); startPolling(); };
-    } catch { startPolling(); }
+
+      es.onerror = (err) => { 
+        console.error("SSE Error, switching to Polling", err);
+        cleanup(); 
+        startPolling(); 
+      };
+
+    } catch (err) { 
+      console.error("SSE Connection Error:", err);
+      startPolling(); 
+    }
   };
 
   const joinQueue = async () => {
     if (!performanceId || !scheduleId) {
       setStatus("ERROR");
-      setMessage("공연 또는 회차 정보가 없습니다.");
+      setMessage("공연 정보가 부족합니다.");
       setLoading(false);
       return;
     }
     try {
-      await api.post("/api/queue/join", { performanceId: Number(performanceId) });
+      await api.post("/api/queue/join", { 
+        performanceId: Number(performanceId),
+        scheduleId: Number(scheduleId)
+      });
       setJoined(true);
       fetchPerformanceInfo();
     } catch (e) {
@@ -106,14 +143,15 @@ export default function Waiting() {
   };
 
   useEffect(() => {
-    if (!token.getAccess()) {
+    const accessToken = token.getAccess();
+    if (!accessToken) {
       alert("로그인이 필요합니다.");
       navigate("/login", { state: { from: location } });
       return;
     }
     joinQueue();
     return () => cleanup();
-  }, [performanceId]);
+  }, [performanceId, scheduleId]);
 
   useEffect(() => {
     if (joined) {
@@ -152,7 +190,7 @@ export default function Waiting() {
           <img src={performance.thumbnailUrl || "/placeholder.jpg"} alt="thumb" className="mini-thumbnail" />
           <div className="mini-info">
             <h4>{performance.title}</h4>
-            <p>회차 ID: {scheduleId}</p>
+            <p>공연 회차: {scheduleId}</p>
           </div>
         </div>
       )}
@@ -162,12 +200,12 @@ export default function Waiting() {
         <div className="waiting-box">
           <div className="waiting-label">내 앞 대기 인원</div>
           <div className="waiting-big">
-            {positionAhead !== null ? positionAhead : "0"}
+            {positionAhead !== null ? positionAhead : "계산 중..."}
             <span>명</span>
           </div>
         </div>
         <p className="waiting-sub">
-          잠시만 기다려 주시면 예약 페이지로 연결됩니다.
+          잠시만 기다려 주시면 예약 페이지로 자동 연결됩니다.
         </p>
         <div className="waiting-actions">
           <button className="btn-cancel" onClick={() => navigate("/performances")}>
