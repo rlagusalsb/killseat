@@ -7,5 +7,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class QueueRequestDto {
     private Long performanceId;
+    private Long scheduleId;
     private Long userId;
 }

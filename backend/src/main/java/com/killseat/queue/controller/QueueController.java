@@ -25,22 +25,28 @@ public class QueueController {
             @AuthenticationPrincipal CustomUserDetails user
     )
     {
-        queueService.addQueue(request.getPerformanceId(), user.getMemberId());
+        queueService.addQueue(request.getPerformanceId(), request.getScheduleId(), user.getMemberId());
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/status")
     public ResponseEntity<QueueResponseDto> getStatus(
             @RequestParam Long performanceId,
+            @RequestParam Long scheduleId,
             @AuthenticationPrincipal CustomUserDetails user
     )
     {
-        QueueResponseDto response = queueService.getQueueStatus(performanceId, user.getMemberId());
+        QueueResponseDto response = queueService.getQueueStatus(performanceId, scheduleId, user.getMemberId());
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping(value = "/subscribe", produces = "text/event-stream")
-    public SseEmitter subscribe(@AuthenticationPrincipal CustomUserDetails user) {
-        return queueNotificationService.subscribe(user.getMemberId());
+    @GetMapping(value = "/subscribe/{performanceId}/{scheduleId}", produces = "text/event-stream")
+    public SseEmitter subscribe(
+            @PathVariable Long performanceId,
+            @PathVariable Long scheduleId,
+            @AuthenticationPrincipal CustomUserDetails user
+    )
+    {
+        return queueNotificationService.subscribe(performanceId, scheduleId, user.getMemberId());
     }
 }
