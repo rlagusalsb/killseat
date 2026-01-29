@@ -28,7 +28,7 @@ public class QueueNotificationService {
         try {
             emitter.send(SseEmitter.event()
                     .name("connect")
-                    .data("connected to performance: " + performanceId + ", schedule: " + scheduleId));
+                    .data("connected"));
         } catch (IOException e) {
             removeEmitter(performanceId, scheduleId, userId);
         }
@@ -39,6 +39,7 @@ public class QueueNotificationService {
     //특정 공연의 특정 유저에게 알림 전송
     public void sendToUser(Long performanceId, Long scheduleId, Long userId, String name, Object data) {
         Map<Long, Map<Long, SseEmitter>> schedules = performanceEmitters.get(performanceId);
+
         if (schedules != null) {
             Map<Long, SseEmitter> emitters = schedules.get(scheduleId);
             if (emitters != null) {
@@ -49,7 +50,6 @@ public class QueueNotificationService {
                                 .name(name)
                                 .data(data));
                     } catch (Exception e) {
-                        emitter.complete();
                         removeEmitter(performanceId, scheduleId, userId);
                     }
                 }
