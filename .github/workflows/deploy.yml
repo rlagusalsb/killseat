@@ -33,7 +33,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "docker-compose.yml"
-          target: "~/app"
+          target: "~/killseat"
 
       #서버에 명령 내리기
       - name: SSH Remote Commands
@@ -43,7 +43,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ~/app
+            cd ~/killseat
             docker-compose down
             docker-compose pull 
             docker-compose up -d 
