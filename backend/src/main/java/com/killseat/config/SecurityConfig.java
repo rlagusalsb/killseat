@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/auth/**", "/api/members/**", "/api/performances/**", "/api/queue/subscribe/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/members/**", "/api/performances/**", "/api/queue/**").permitAll()
                         .requestMatchers(POST, "/api/payments/confirm").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
@@ -54,8 +54,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/reservations/**").authenticated()
 
                         .requestMatchers("/api/performance-seats/**").authenticated()
-
-                        .requestMatchers("/api/queue/**").authenticated()
 
                         .anyRequest().authenticated()
                 )
