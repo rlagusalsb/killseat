@@ -12,7 +12,7 @@ services:
       retries: 5
 
   backend:
-    build: ./backend
+    image: rlagusalsb/killseat-backend:latest
     container_name: killseat-backend
     restart: always
     depends_on:
@@ -31,10 +31,10 @@ services:
       PORTONE_API_SECRET: ${PORTONE_API_SECRET}
 
   frontend:
-    build: ./frontend
+    image: rlagusalsb/killseat-frontend:latest
     container_name: killseat-frontend
     restart: always
     ports:
-      - "5173:80"
+      - "80:80"
     depends_on:
       - backend
