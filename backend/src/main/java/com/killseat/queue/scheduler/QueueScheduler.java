@@ -2,57 +2,86 @@ package com.killseat.queue.scheduler;
 
 import com.killseat.queue.service.QueueNotificationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.time.Duration;
+import java.util.Map;
 import java.util.Set;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class QueueScheduler {
-
-    private final RedisTemplate<String, String> redisTemplate;
+    private final StringRedisTemplate redisTemplate;
     private final QueueNotificationService queueNotificationService;
-    private static final String WAITING_KEY_PATTERN = "waiting:performance:*";
+
+    private static final String WAITING_KEY_FORMAT = "waiting:performance:%d:schedule:%d";
     private static final String ACTIVE_KEY_PREFIX = "queue:active:";
+
+    //1초마다 입장시킬 인원을 정의
+    private static final int MAX_ENTER_COUNT = 10;
 
     @Scheduled(fixedDelay = 1000)
     public void processQueue() {
-        Set<String> waitingKeys = redisTemplate.keys(WAITING_KEY_PATTERN);
+        Map<Long, Map<Long, Map<Long, SseEmitter>>> allEmitters = queueNotificationService.getAllEmitters();
 
-        if (waitingKeys.isEmpty()) {
-            return;
-        }
+        for (Long performanceId : allEmitters.keySet()) {
+            Map<Long, Map<Long, SseEmitter>> schedules = allEmitters.get(performanceId);
+            for (Long scheduleId : schedules.keySet()) {
+                String waitingKey = String.format(WAITING_KEY_FORMAT, performanceId, scheduleId);
 
-        for (String waitingKey : waitingKeys) {
-            Set<String> waitingUsers = redisTemplate.opsForZSet().range(waitingKey, 0, 9);
+                //설정한 인원(MAX_ENTER_COUNT)만큼만 대기열에서 추출
+                Set<String> entryUsers = redisTemplate.opsForZSet().range(waitingKey, 0, MAX_ENTER_COUNT - 1);
 
-            if (waitingUsers == null || waitingUsers.isEmpty()) {
-                continue;
-            }
+                if (entryUsers != null && !entryUsers.isEmpty()) {
+                    for (String userIdStr : entryUsers) {
+                        //추출된 인원을 Redis 대기열에서 즉시 삭제
+                        redisTemplate.opsForZSet().remove(waitingKey, userIdStr);
 
-            for (String userId : waitingUsers) {
-                //입장 권한 부여
-                redisTemplate.opsForValue().set(ACTIVE_KEY_PREFIX + userId, "PROCEED", Duration.ofMinutes(5));
-                redisTemplate.opsForZSet().remove(waitingKey, userId);
+                        try {
+                            String cleanUserId = userIdStr.replace("\"", "").replaceAll("[^0-9]", "");
+                            if (cleanUserId.isEmpty()) continue;
+                            Long userId = Long.parseLong(cleanUserId);
 
-                Long parsedUserId = Long.parseLong(userId.replace("\"", ""));
+                            //해당 유저에게 'PROCEED' 권한 부여 (5분간 유효)
+                            redisTemplate.opsForValue().set(ACTIVE_KEY_PREFIX + userId, "PROCEED", Duration.ofMinutes(5));
 
-                //유저에게 SSE로 실시간 알림 발송
-                queueNotificationService.sendToUser(parsedUserId, "proceed", "입장 가능");
+                            //입장 신호 전송
+                            queueNotificationService.sendToUser(performanceId, scheduleId, userId, "proceed", "ENTER");
 
-            }
+                            log.info("[Queue] User {} entered. Performance: {}, Schedule: {}", userId, performanceId, scheduleId);
+                        } catch (Exception e) {
+                            log.error("[Queue] Failed to process user entry: {}", userIdStr);
+                        }
+                    }
+                }
 
-            Set<String> allWaitingUsers = redisTemplate.opsForZSet().range(waitingKey, 0, -1);
+                //남은 유저들에게만 순번 알림
+                Set<String> remainingUsers = redisTemplate.opsForZSet().range(waitingKey, 0, -1);
+                if (remainingUsers != null) {
+                    int rank = 1;
+                    Map<Long, SseEmitter> activeEmitters = schedules.getOrDefault(scheduleId, Map.of());
 
-            for (String uid : allWaitingUsers) {
-                Long rank = redisTemplate.opsForZSet().rank(waitingKey, uid);
+                    for (String uidStr : remainingUsers) {
+                        try {
+                            String cleanUid = uidStr.replace("\"", "").replaceAll("[^0-9]", "");
+                            if (cleanUid.isEmpty()) { rank++; continue; }
+                            Long userId = Long.parseLong(cleanUid);
 
-                Long parsedUid = Long.parseLong(uid.replace("\"", ""));
-
-                queueNotificationService.sendToUser(parsedUid, "update", (rank + 1) + "명 남았습니다.");
+                            //현재 접속 중인 유저에게만 순번 전송
+                            if (activeEmitters.containsKey(userId)) {
+                                queueNotificationService.sendToUser(performanceId, scheduleId, userId, "queueStatus", Map.of("rank", rank));
+                            }
+                            rank++;
+                        } catch (Exception e) {
+                            rank++;
+                        }
+                    }
+                }
             }
         }
     }
