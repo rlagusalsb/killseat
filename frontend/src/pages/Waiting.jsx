@@ -15,7 +15,10 @@ export default function Waiting() {
 
   const [loading, setLoading] = useState(true);
   const [joined, setJoined] = useState(false);
-  const [positionAhead, setPositionAhead] = useState(null);
+
+  const [serverAhead, setServerAhead] = useState(null);
+  const [displayAhead, setDisplayAhead] = useState(null);
+
   const [performance, setPerformance] = useState(null);
   const [status, setStatus] = useState("WAITING");
   const [message, setMessage] = useState("");
@@ -36,7 +39,10 @@ export default function Waiting() {
 
   const goReservation = () => {
     cleanup();
-    navigate(`/performances/${performanceId}/seats?scheduleId=${scheduleId}`, { replace: true });
+    navigate(
+      `/performances/${performanceId}/seats?scheduleId=${scheduleId}`,
+      { replace: true }
+    );
   };
 
   const fetchPerformanceInfo = async () => {
@@ -49,25 +55,34 @@ export default function Waiting() {
   };
 
   const applyStatusData = (data) => {
-    const rawPosition = data?.positionAhead ?? data?.ahead ?? data?.position ?? data?.rank;
-    if (rawPosition !== undefined && rawPosition !== null) {
-      const currentRank = Number(rawPosition);
-      const aheadCount = currentRank - 1;
-      setPositionAhead(aheadCount < 0 ? 0 : aheadCount);
-      if (currentRank <= 0) goReservation();
+    if (data == null) return;
+    
+    const raw = typeof data === 'object' 
+      ? (data?.positionAhead ?? data?.ahead ?? data?.position ?? data?.rank)
+      : data;
+
+    if (raw == null) return;
+
+    const rank = Number(raw);
+    const ahead = Math.max(rank - 1, 0);
+
+    setServerAhead(ahead);
+    setDisplayAhead((prev) =>
+      prev == null ? ahead : Math.min(prev, ahead)
+    );
+
+    if (rank <= 0 || data?.status === "ENTER" || data?.canEnter === true) {
+      goReservation();
     }
-    if (data?.status === "ENTER" || data?.canEnter === true) goReservation();
   };
 
   const fetchStatus = async () => {
     try {
-      const res = await api.get("/api/queue/status", { 
-        params: { performanceId, scheduleId } 
+      const res = await api.get("/api/queue/status", {
+        params: { performanceId, scheduleId },
       });
       applyStatusData(res.data);
-    } catch (e) {
-      console.error(e);
-    }
+    } catch {}
   };
 
   const startPolling = () => {
@@ -84,39 +99,31 @@ export default function Waiting() {
     try {
       const es = new EventSourcePolyfill(url, {
         headers: {
-          'Authorization': `Bearer ${accessToken}`
+          Authorization: `Bearer ${accessToken}`,
         },
         withCredentials: true,
-        heartbeatTimeout: 1800000 
+        heartbeatTimeout: 1800000,
       });
 
       sseRef.current = es;
 
-      es.addEventListener("connect", (e) => {
-        console.log("SSE Connected:", e.data);
-      });
-
       es.addEventListener("queueStatus", (event) => {
         try {
-          const data = JSON.parse(event.data);
-          applyStatusData(data);
+          applyStatusData(JSON.parse(event.data));
         } catch {
           const n = Number(event.data);
           if (!Number.isNaN(n)) applyStatusData({ rank: n });
         }
       });
 
-      es.addEventListener("proceed", () => goReservation());
+      es.addEventListener("proceed", goReservation);
 
-      es.onerror = (err) => { 
-        console.error("SSE Error, switching to Polling", err);
-        cleanup(); 
-        startPolling(); 
+      es.onerror = () => {
+        cleanup();
+        startPolling();
       };
-
-    } catch (err) { 
-      console.error("SSE Connection Error:", err);
-      startPolling(); 
+    } catch {
+      startPolling();
     }
   };
 
@@ -127,10 +134,11 @@ export default function Waiting() {
       setLoading(false);
       return;
     }
+
     try {
-      await api.post("/api/queue/join", { 
+      await api.post("/api/queue/join", {
         performanceId: Number(performanceId),
-        scheduleId: Number(scheduleId)
+        scheduleId: Number(scheduleId),
       });
       setJoined(true);
       fetchPerformanceInfo();
@@ -150,7 +158,7 @@ export default function Waiting() {
       return;
     }
     joinQueue();
-    return () => cleanup();
+    return cleanup;
   }, [performanceId, scheduleId]);
 
   useEffect(() => {
@@ -159,6 +167,19 @@ export default function Waiting() {
       connectSSE();
     }
   }, [joined]);
+
+  useEffect(() => {
+    if (displayAhead == null || serverAhead == null) return;
+    if (displayAhead <= serverAhead) return;
+
+    const timer = setInterval(() => {
+      setDisplayAhead((prev) =>
+        prev > serverAhead ? prev - 1 : prev
+      );
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [displayAhead, serverAhead]);
 
   if (loading) {
     return (
@@ -177,7 +198,12 @@ export default function Waiting() {
         <div className="waiting-card">
           <h2 className="waiting-title">안내</h2>
           <p className="waiting-sub">{message}</p>
-          <button className="btn-cancel" onClick={() => navigate("/performances")}>목록으로</button>
+          <button
+            className="btn-cancel"
+            onClick={() => navigate("/performances")}
+          >
+            목록으로
+          </button>
         </div>
       </div>
     );
@@ -187,7 +213,11 @@ export default function Waiting() {
     <div className="waiting-wrap">
       {performance && (
         <div className="performance-mini-card">
-          <img src={performance.thumbnailUrl || "/placeholder.jpg"} alt="thumb" className="mini-thumbnail" />
+          <img
+            src={performance.thumbnailUrl || "/placeholder.jpg"}
+            alt="thumb"
+            className="mini-thumbnail"
+          />
           <div className="mini-info">
             <h4>{performance.title}</h4>
             <p>공연 회차: {scheduleId}</p>
@@ -200,7 +230,7 @@ export default function Waiting() {
         <div className="waiting-box">
           <div className="waiting-label">내 앞 대기 인원</div>
           <div className="waiting-big">
-            {positionAhead !== null ? positionAhead : "계산 중..."}
+            {displayAhead !== null ? displayAhead : "계산 중..."}
             <span>명</span>
           </div>
         </div>
@@ -208,7 +238,10 @@ export default function Waiting() {
           잠시만 기다려 주시면 예약 페이지로 자동 연결됩니다.
         </p>
         <div className="waiting-actions">
-          <button className="btn-cancel" onClick={() => navigate("/performances")}>
+          <button
+            className="btn-cancel"
+            onClick={() => navigate("/performances")}
+          >
             대기 취소
           </button>
         </div>
