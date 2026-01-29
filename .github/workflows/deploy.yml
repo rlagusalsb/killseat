@@ -20,8 +20,11 @@ jobs:
       #이미지 build 및 push
       - name: Build and push
         run: |
+          docker build \
+            --build-arg VITE_API_URL=${{ secrets.VITE_API_URL }} \
+            --build-arg VITE_IMP_CODE=${{ secrets.VITE_IMP_CODE }} \
+            -t ${{ secrets.DOCKER_USERNAME }}/killseat-frontend ./frontend
           docker build -t ${{ secrets.DOCKER_USERNAME }}/killseat-backend ./backend
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/killseat-frontend ./frontend
           docker push ${{ secrets.DOCKER_USERNAME }}/killseat-backend
           docker push ${{ secrets.DOCKER_USERNAME }}/killseat-frontend
 
