@@ -11,11 +11,13 @@
   max-width: 800px;
   width: 100%;
   padding: 0 20px;
+  padding-bottom: 100px;
 }
 
 .page-header {
   text-align: center;
   margin-bottom: 50px;
+  position: relative;
 }
 
 .page-title {
@@ -24,6 +26,14 @@
   color: #111;
   margin: 0;
   letter-spacing: -1px;
+}
+
+.total-count {
+  display: block;
+  margin-top: 10px;
+  font-size: 0.95rem;
+  color: #868e96;
+  font-weight: 500;
 }
 
 .performance-list {
@@ -115,11 +125,45 @@
   margin-bottom: 8px;
 }
 
-.performance-price {
-  margin-top: auto;
-  font-size: 1.2rem;
-  font-weight: 700;
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  margin-top: 60px;
+  padding-top: 20px;
+}
+
+.page-btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid #eee;
+  background: #fff;
+  color: #333;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #f8f9fa;
+  border-color: #ff4d4f;
   color: #ff4d4f;
+}
+
+.page-btn:disabled {
+  background: #f1f3f5;
+  color: #adb5bd;
+  cursor: not-allowed;
+  border-color: #eee;
+}
+
+.page-info {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #222;
+  min-width: 60px;
+  text-align: center;
 }
 
 .helper-text { 
@@ -156,5 +200,9 @@
     flex-direction: column;
     align-items: center;
     gap: 8px;
+  }
+
+  .pagination {
+    gap: 12px;
   }
 }
