@@ -26,9 +26,12 @@ public class ReservationExpireScheduler {
     public void expireReservations() {
         LocalDateTime now = LocalDateTime.now();
 
-        //만료된 예약(PENDING 상태고 시간이 지난)들에 연결된 좌석 ID 리스트만 가져옴 (엔티티를 가져오는거보다 ID만 가져오는게 가벼움)
+        //선점 및 결제창 진입 후 5분 내에 최종 확정되지 않은 미완료 건들을 처리
+        List<ReservationStatus> targets = List.of(ReservationStatus.PENDING, ReservationStatus.PAYING);
+
+        //만료된 예약들에 연결된 좌석 ID 리스트만 가져옴 (엔티티를 가져오는거보다 ID만 가져오는게 가벼움)
         List<Long> seatIdsToRelease = reservationRepository.findSeatIdsByExpiredReservation(
-                ReservationStatus.PENDING,
+                targets,
                 now
         );
 
@@ -39,7 +42,7 @@ public class ReservationExpireScheduler {
 
         //예약 테이블의 상태를 한꺼번에 CANCELED로 바꿈
         int updatedReservations = reservationRepository.bulkUpdateStatusForExpired(
-                ReservationStatus.PENDING,
+                targets,
                 ReservationStatus.CANCELED,
                 now
         );
