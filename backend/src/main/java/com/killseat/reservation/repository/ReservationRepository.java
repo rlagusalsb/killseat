@@ -91,10 +91,10 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         select ps.performanceSeatId
           from Reservation r
           join r.performanceSeat ps
-         where r.status = :status
+         where r.status in :statuses
            and r.expiresAt < :now
     """)
-    List<Long> findSeatIdsByExpiredReservation(@Param("status") ReservationStatus status,
+    List<Long> findSeatIdsByExpiredReservation(@Param("statuses") List<ReservationStatus> statuses,
                                                @Param("now") LocalDateTime now);
 
     //예약 상태 일괄 변경
@@ -103,10 +103,10 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         update Reservation r
            set r.status = :to,
                r.updatedAt = :now
-         where r.status = :from
+         where r.status in :statuses
            and r.expiresAt < :now
     """)
-    int bulkUpdateStatusForExpired(@Param("from") ReservationStatus from,
+    int bulkUpdateStatusForExpired(@Param("statuses") List<ReservationStatus> statuses,
                                    @Param("to") ReservationStatus to,
                                    @Param("now") LocalDateTime now);
 }
