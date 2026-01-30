@@ -16,11 +16,7 @@ public class PerformanceSeatController {
     private final PerformanceSeatService performanceSeatService;
 
     @GetMapping("/{performanceId}")
-    public ResponseEntity<List<PerformanceSeatResponseDto>> getSeatsByPerformance(
-            @PathVariable Long performanceId,
-            @RequestParam Long scheduleId
-    )
-    {
+    public ResponseEntity<List<PerformanceSeatResponseDto>> getSeatsByPerformance(@RequestParam Long scheduleId) {
         List<PerformanceSeatResponseDto> seats =
                 performanceSeatService.getSeatsByPerformance(scheduleId);
         return ResponseEntity.ok(seats);
