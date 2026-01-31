@@ -1,14 +1,16 @@
 package com.killseat.admin.performance.controller;
 
 import com.killseat.admin.performance.dto.AdminPerformanceRequestDto;
+import com.killseat.performance.dto.PageResponse;
 import com.killseat.performance.dto.PerformanceResponseDto;
 import com.killseat.performance.service.PerformanceService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/performances")
@@ -24,8 +26,9 @@ public class AdminPerformanceController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PerformanceResponseDto>> getAllPerformances() {
-        return ResponseEntity.ok(performanceService.getAllForAdmin());
+    public ResponseEntity<PageResponse<PerformanceResponseDto>> getAllPerformances(
+            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(performanceService.getAllForAdmin(pageable));
     }
 
     @PatchMapping("/{id}/open")

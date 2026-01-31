@@ -6,6 +6,12 @@ import "../../css/admin/AdminPerformanceList.css";
 
 export default function AdminPerformanceList() {
   const [performances, setPerformances] = useState([]);
+  const [pageInfo, setPageInfo] = useState({
+    currentPage: 0,
+    totalPages: 0,
+    totalElements: 0
+  });
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSeatModalOpen, setIsSeatModalOpen] = useState(false);
   const [selectedScheduleId, setSelectedScheduleId] = useState(null);
@@ -18,13 +24,26 @@ export default function AdminPerformanceList() {
   });
 
   useEffect(() => {
-    fetchPerformances();
-  }, []);
+    fetchPerformances(pageInfo.currentPage);
+  }, [pageInfo.currentPage]);
 
-  const fetchPerformances = () => {
-    api.get("/api/admin/performances")
-       .then(res => setPerformances(res.data.content || res.data))
+  const fetchPerformances = (page = 0) => {
+    api.get(`/api/admin/performances?page=${page}`)
+       .then(res => {
+         setPerformances(res.data.content); 
+         setPageInfo({
+           currentPage: res.data.currentPage,
+           totalPages: res.data.totalPages,
+           totalElements: res.data.totalElements
+         });
+       })
        .catch(err => console.error(err));
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 0 && newPage < pageInfo.totalPages) {
+      setPageInfo(prev => ({ ...prev, currentPage: newPage }));
+    }
   };
 
   const handleSeatManage = (pf, sc) => {
@@ -60,7 +79,7 @@ export default function AdminPerformanceList() {
 
     request.then(() => {
       setIsModalOpen(false);
-      fetchPerformances();
+      fetchPerformances(pageInfo.currentPage);
     }).catch(err => {
       alert("저장 실패: " + (err.response?.data?.message || "서버 에러"));
     });
@@ -69,7 +88,7 @@ export default function AdminPerformanceList() {
   return (
     <div className="admin-list-container">
       <div className="list-header">
-        <h3>공연 및 회차 관리</h3>
+        <h3>공연 및 회차 관리 ({pageInfo.totalElements})</h3>
         <button className="btn-create" onClick={() => handleOpenModal()}>공연 등록</button>
       </div>
 
@@ -113,6 +132,32 @@ export default function AdminPerformanceList() {
           ))}
         </tbody>
       </table>
+
+      <div className="pagination">
+        <button 
+          onClick={() => handlePageChange(pageInfo.currentPage - 1)}
+          disabled={pageInfo.currentPage === 0}
+        >
+          이전
+        </button>
+        
+        {[...Array(pageInfo.totalPages)].map((_, i) => (
+          <button 
+            key={i} 
+            className={pageInfo.currentPage === i ? "active" : ""}
+            onClick={() => handlePageChange(i)}
+          >
+            {i + 1}
+          </button>
+        ))}
+
+        <button 
+          onClick={() => handlePageChange(pageInfo.currentPage + 1)}
+          disabled={pageInfo.currentPage >= pageInfo.totalPages - 1}
+        >
+          다음
+        </button>
+      </div>
 
       <AdminPerformanceModal 
         isOpen={isModalOpen}

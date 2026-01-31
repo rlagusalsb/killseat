@@ -5,13 +5,11 @@ import com.killseat.performance.dto.PageResponse;
 import com.killseat.performance.dto.PerformanceResponseDto;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-
 public interface PerformanceService {
     PageResponse<PerformanceResponseDto> getActivePerformances(Pageable pageable);
     PerformanceResponseDto getOne(Long id);
     PerformanceResponseDto getOneForAdmin(Long id);
-    List<PerformanceResponseDto> getAllForAdmin();
+    PageResponse<PerformanceResponseDto> getAllForAdmin(Pageable pageable);
     PerformanceResponseDto createByAdmin(AdminPerformanceRequestDto request);
     PerformanceResponseDto updatePerformance(Long id, AdminPerformanceRequestDto request);
     void openPerformance(Long id);
