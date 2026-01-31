@@ -27,7 +27,7 @@ public class AdminPerformanceController {
 
     @GetMapping
     public ResponseEntity<PageResponse<PerformanceResponseDto>> getAllPerformances(
-            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 20, sort = "performanceId", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(performanceService.getAllForAdmin(pageable));
     }
 
