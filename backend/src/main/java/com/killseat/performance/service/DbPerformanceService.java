@@ -68,10 +68,11 @@ public class DbPerformanceService implements PerformanceService {
     //관리자 전용 전체 공연 목록 조회
     @Override
     @Transactional(readOnly = true)
-    public List<PerformanceResponseDto> getAllForAdmin() {
-        return performanceRepository.findAll().stream()
-                .map(performanceMapper::toDto)
-                .collect(Collectors.toList());
+    public PageResponse<PerformanceResponseDto> getAllForAdmin(Pageable pageable) {
+        Page<PerformanceResponseDto> page = performanceRepository.findAll(pageable)
+                .map(performanceMapper::toDto);
+
+        return new PageResponse<>(page);
     }
 
     //관리자 전용 공연 및 좌석 등록
