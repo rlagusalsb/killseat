@@ -32,7 +32,7 @@ export default function AdminPerformanceList() {
        .then(res => {
          setPerformances(res.data.content); 
          setPageInfo({
-           currentPage: res.data.currentPage,
+           currentPage: res.data.pageNumber, 
            totalPages: res.data.totalPages,
            totalElements: res.data.totalElements
          });
