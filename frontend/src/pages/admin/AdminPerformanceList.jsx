@@ -85,6 +85,45 @@ export default function AdminPerformanceList() {
     });
   };
 
+  const renderPagination = () => {
+    const { currentPage, totalPages } = pageInfo;
+    const pageSize = 5;
+    const currentGroup = Math.floor(currentPage / pageSize);
+    const startPage = currentGroup * pageSize;
+    const endPage = Math.min(startPage + pageSize, totalPages);
+
+    const pages = [];
+    for (let i = startPage; i < endPage; i++) {
+      pages.push(
+        <button 
+          key={i} 
+          className={currentPage === i ? "active" : ""}
+          onClick={() => handlePageChange(i)}
+        >
+          {i + 1}
+        </button>
+      );
+    }
+
+    return (
+      <div className="pagination">
+        <button 
+          onClick={() => handlePageChange(startPage - 1)}
+          disabled={startPage === 0}
+        >
+          이전
+        </button>
+        {pages}
+        <button 
+          onClick={() => handlePageChange(endPage)}
+          disabled={endPage >= totalPages}
+        >
+          다음
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div className="admin-list-container">
       <div className="list-header">
@@ -133,31 +172,7 @@ export default function AdminPerformanceList() {
         </tbody>
       </table>
 
-      <div className="pagination">
-        <button 
-          onClick={() => handlePageChange(pageInfo.currentPage - 1)}
-          disabled={pageInfo.currentPage === 0}
-        >
-          이전
-        </button>
-        
-        {[...Array(pageInfo.totalPages)].map((_, i) => (
-          <button 
-            key={i} 
-            className={pageInfo.currentPage === i ? "active" : ""}
-            onClick={() => handlePageChange(i)}
-          >
-            {i + 1}
-          </button>
-        ))}
-
-        <button 
-          onClick={() => handlePageChange(pageInfo.currentPage + 1)}
-          disabled={pageInfo.currentPage >= pageInfo.totalPages - 1}
-        >
-          다음
-        </button>
-      </div>
+      {renderPagination()}
 
       <AdminPerformanceModal 
         isOpen={isModalOpen}
