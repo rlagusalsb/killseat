@@ -32,3 +32,14 @@ jwt:
 portone:
   api-key: ${PORTONE_API_KEY}
   api-secret: ${PORTONE_API_SECRET}
+
+springdoc:
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  swagger-ui:
+    path: /swagger-ui/index.html
+    groups-order: ASC
+    operations-sorter: method
+    disable-swagger-default-url: true
+  api-docs:
+    path: /api-docs
