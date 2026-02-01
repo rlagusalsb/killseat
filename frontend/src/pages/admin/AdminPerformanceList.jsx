@@ -73,13 +73,8 @@ export default function AdminPerformanceList() {
       });
     } else {
       setFormData({
-        performanceId: "", 
-        title: "", 
-        content: "", 
-        location: "",
-        price: 0, 
-        thumbnailUrl: "", 
-        status: "BEFORE_OPEN",
+        performanceId: "", title: "", content: "", location: "",
+        price: 0, thumbnailUrl: "", status: "BEFORE_OPEN",
         schedules: [{ startTime: "", endTime: "" }]
       });
     }
@@ -194,21 +189,25 @@ export default function AdminPerformanceList() {
 
       {renderPagination()}
 
-      <AdminPerformanceModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleSubmit}
-        formData={formData}
-        setFormData={setFormData}
-      />
+      {isModalOpen && (
+        <AdminPerformanceModal 
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleSubmit}
+          formData={formData}
+          setFormData={setFormData}
+        />
+      )}
 
-      <AdminSeatModal 
-        isOpen={isSeatModalOpen}
-        onClose={() => setIsSeatModalOpen(false)}
-        scheduleId={selectedScheduleId}
-        performanceTitle={selectedTitle}
-        scheduleTime={selectedDateTime}
-      />
+      {isSeatModalOpen && (
+        <AdminSeatModal 
+          isOpen={isSeatModalOpen}
+          onClose={() => setIsSeatModalOpen(false)}
+          scheduleId={selectedScheduleId}
+          performanceTitle={selectedTitle}
+          scheduleTime={selectedDateTime}
+        />
+      )}
     </div>
   );
 }
