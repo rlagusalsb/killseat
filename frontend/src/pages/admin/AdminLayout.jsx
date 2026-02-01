@@ -5,7 +5,7 @@ export default function AdminLayout() {
   return (
     <div className="admin-container">
       <aside className="admin-sidebar">
-        <div className="admin-sidebar-title">관리자 도구</div>
+        <div className="admin-sidebar-title">관리자 메뉴</div>
         <nav className="admin-nav">
           <NavLink 
             to="/admin/members" 
