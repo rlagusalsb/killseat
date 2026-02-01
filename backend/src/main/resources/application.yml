@@ -22,7 +22,7 @@ spring:
       port: ${REDIS_PORT:6379}
 
 performance:
-  cache-enabled: ${CACHE_ENABLED:false}
+  cache-enabled: ${CACHE_ENABLED:true}
 
 jwt:
   secret: ${JWT_SECRET}
