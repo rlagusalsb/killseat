@@ -53,9 +53,8 @@ export default function AdminPerformanceList() {
     }
     setSelectedTitle(pf.title);
     setSelectedScheduleId(sc.scheduleId);
-    const start = sc.startTime || "";
-    const datePart = start.substring(5, 10).replace("-", "/");
-    const timePart = start.substring(11, 16);
+    const datePart = sc.startTime ? sc.startTime.substring(5, 10).replace("-", "/") : "";
+    const timePart = sc.startTime ? sc.startTime.substring(11, 16) : "";
     setSelectedDateTime(`${datePart} ${timePart}`);
     setIsSeatModalOpen(true);
   };
@@ -63,7 +62,13 @@ export default function AdminPerformanceList() {
   const handleOpenModal = (pf = null) => {
     if (pf) {
       setFormData({
-        ...pf,
+        performanceId: pf.performanceId || "",
+        title: pf.title || "",
+        content: pf.content || "",
+        location: pf.location || "",
+        price: pf.price || 0,
+        thumbnailUrl: pf.thumbnailUrl || "",
+        status: pf.status || "BEFORE_OPEN",
         schedules: pf.schedules || []
       });
     } else {
