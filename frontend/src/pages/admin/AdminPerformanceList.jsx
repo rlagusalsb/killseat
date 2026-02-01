@@ -81,10 +81,10 @@ export default function AdminPerformanceList() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = () => {
-    const request = formData.performanceId 
-      ? api.put(`/api/admin/performances/${formData.performanceId}`, formData)
-      : api.post("/api/admin/performances", formData);
+  const handleSubmit = (payload) => {
+    const request = payload.performanceId 
+      ? api.put(`/api/admin/performances/${payload.performanceId}`, payload)
+      : api.post("/api/admin/performances", payload);
 
     request.then(() => {
       setIsModalOpen(false);
@@ -118,19 +118,9 @@ export default function AdminPerformanceList() {
 
     return (
       <div className="pagination">
-        <button 
-          onClick={() => handlePageChange(startPage - 1)}
-          disabled={startPage === 0}
-        >
-          이전
-        </button>
+        <button onClick={() => handlePageChange(startPage - 1)} disabled={startPage === 0}>이전</button>
         {pages}
-        <button 
-          onClick={() => handlePageChange(endPage)}
-          disabled={endPage >= totalPages}
-        >
-          다음
-        </button>
+        <button onClick={() => handlePageChange(endPage)} disabled={endPage >= totalPages}>다음</button>
       </div>
     );
   };
@@ -163,11 +153,7 @@ export default function AdminPerformanceList() {
                 <td>
                   <div className="schedule-tags">
                     {pf.schedules?.map((sc, idx) => (
-                      <button 
-                        key={idx} 
-                        className="time-tag-btn" 
-                        onClick={() => handleSeatManage(pf, sc)}
-                      >
+                      <button key={idx} className="time-tag-btn" onClick={() => handleSeatManage(pf, sc)}>
                         {sc.startTime?.substring(5, 10).replace("-", "/")} {sc.startTime?.substring(11, 16)}
                       </button>
                     ))}
