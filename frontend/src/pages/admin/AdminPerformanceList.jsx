@@ -53,8 +53,9 @@ export default function AdminPerformanceList() {
     }
     setSelectedTitle(pf.title);
     setSelectedScheduleId(sc.scheduleId);
-    const datePart = sc.startTime ? sc.startTime.substring(5, 10).replace("-", "/") : "";
-    const timePart = sc.startTime ? sc.startTime.substring(11, 16) : "";
+    const start = sc.startTime || "";
+    const datePart = start.substring(5, 10).replace("-", "/");
+    const timePart = start.substring(11, 16);
     setSelectedDateTime(`${datePart} ${timePart}`);
     setIsSeatModalOpen(true);
   };
@@ -62,13 +63,7 @@ export default function AdminPerformanceList() {
   const handleOpenModal = (pf = null) => {
     if (pf) {
       setFormData({
-        performanceId: pf.performanceId || "",
-        title: pf.title || "",
-        content: pf.content || "",
-        location: pf.location || "",
-        price: pf.price || 0,
-        thumbnailUrl: pf.thumbnailUrl || "",
-        status: pf.status || "BEFORE_OPEN",
+        ...pf,
         schedules: pf.schedules || []
       });
     } else {
@@ -98,10 +93,10 @@ export default function AdminPerformanceList() {
     const { currentPage, totalPages } = pageInfo;
     if (totalPages <= 1) return null;
 
-    const pageSize = 5;
-    const currentGroup = Math.floor(currentPage / pageSize);
-    const startPage = currentGroup * pageSize;
-    const endPage = Math.min(startPage + pageSize, totalPages);
+    const blockSize = 5;
+    const currentBlock = Math.floor(currentPage / blockSize);
+    const startPage = currentBlock * blockSize;
+    const endPage = Math.min(startPage + blockSize, totalPages);
 
     const pages = [];
     for (let i = startPage; i < endPage; i++) {
@@ -182,7 +177,7 @@ export default function AdminPerformanceList() {
               </tr>
             ))
           ) : (
-            <tr><td colSpan="6" style={{textAlign:'center', padding:'20px'}}>공연 데이터가 없습니다.</td></tr>
+            <tr><td colSpan="6" style={{textAlign:'center', padding:'40px'}}>데이터가 없습니다.</td></tr>
           )}
         </tbody>
       </table>
