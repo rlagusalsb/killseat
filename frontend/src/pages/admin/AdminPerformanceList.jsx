@@ -30,11 +30,11 @@ export default function AdminPerformanceList() {
   const fetchPerformances = (page = 0) => {
     api.get(`/api/admin/performances?page=${page}`)
        .then(res => {
-         setPerformances(res.data.content); 
+         setPerformances(res.data.content || []); 
          setPageInfo({
-           currentPage: res.data.currentPage,
-           totalPages: res.data.totalPages,
-           totalElements: res.data.totalElements
+           currentPage: res.data.pageNumber || 0, 
+           totalPages: res.data.totalPages || 0,
+           totalElements: res.data.totalElements || 0
          });
        })
        .catch(err => console.error(err));
@@ -53,15 +53,24 @@ export default function AdminPerformanceList() {
     }
     setSelectedTitle(pf.title);
     setSelectedScheduleId(sc.scheduleId);
-    const datePart = sc.startTime.substring(5, 10).replace("-", "/");
-    const timePart = sc.startTime.substring(11, 16);
+    const datePart = sc.startTime ? sc.startTime.substring(5, 10).replace("-", "/") : "";
+    const timePart = sc.startTime ? sc.startTime.substring(11, 16) : "";
     setSelectedDateTime(`${datePart} ${timePart}`);
     setIsSeatModalOpen(true);
   };
 
   const handleOpenModal = (pf = null) => {
     if (pf) {
-      setFormData({ ...pf, schedules: pf.schedules || [] });
+      setFormData({
+        performanceId: pf.performanceId || "",
+        title: pf.title || "",
+        content: pf.content || "",
+        location: pf.location || "",
+        price: pf.price || 0,
+        thumbnailUrl: pf.thumbnailUrl || "",
+        status: pf.status || "BEFORE_OPEN",
+        schedules: pf.schedules || []
+      });
     } else {
       setFormData({
         performanceId: "", title: "", content: "", location: "",
@@ -72,10 +81,10 @@ export default function AdminPerformanceList() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = () => {
-    const request = formData.performanceId 
-      ? api.put(`/api/admin/performances/${formData.performanceId}`, formData)
-      : api.post("/api/admin/performances", formData);
+  const handleSubmit = (payload) => {
+    const request = payload.performanceId 
+      ? api.put(`/api/admin/performances/${payload.performanceId}`, payload)
+      : api.post("/api/admin/performances", payload);
 
     request.then(() => {
       setIsModalOpen(false);
@@ -85,11 +94,42 @@ export default function AdminPerformanceList() {
     });
   };
 
+  const renderPagination = () => {
+    const { currentPage, totalPages } = pageInfo;
+    if (totalPages <= 1) return null;
+
+    const blockSize = 5;
+    const currentBlock = Math.floor(currentPage / blockSize);
+    const startPage = currentBlock * blockSize;
+    const endPage = Math.min(startPage + blockSize, totalPages);
+
+    const pages = [];
+    for (let i = startPage; i < endPage; i++) {
+      pages.push(
+        <button 
+          key={i} 
+          className={currentPage === i ? "active" : ""}
+          onClick={() => handlePageChange(i)}
+        >
+          {i + 1}
+        </button>
+      );
+    }
+
+    return (
+      <div className="pagination">
+        <button onClick={() => handlePageChange(startPage - 1)} disabled={startPage === 0}>이전</button>
+        {pages}
+        <button onClick={() => handlePageChange(endPage)} disabled={endPage >= totalPages}>다음</button>
+      </div>
+    );
+  };
+
   return (
     <div className="admin-list-container">
       <div className="list-header">
         <h3>공연 및 회차 관리 ({pageInfo.totalElements})</h3>
-        <button className="btn-create" onClick={() => handleOpenModal()}>공연 등록</button>
+        <button className="btn-create" onClick={() => handleOpenModal(null)}>공연 등록</button>
       </div>
 
       <table className="admin-table">
@@ -104,76 +144,56 @@ export default function AdminPerformanceList() {
           </tr>
         </thead>
         <tbody>
-          {performances.map(pf => (
-            <tr key={pf.performanceId}>
-              <td>{pf.performanceId}</td>
-              <td className="pf-title">{pf.title}</td>
-              <td>{pf.location}</td>
-              <td>
-                <div className="schedule-tags">
-                  {pf.schedules?.map((sc, idx) => (
-                    <button 
-                      key={idx} 
-                      className="time-tag-btn" 
-                      onClick={() => handleSeatManage(pf, sc)}
-                    >
-                      {sc.startTime?.substring(5, 10).replace("-", "/")} {sc.startTime?.substring(11, 16)}
-                    </button>
-                  ))}
-                </div>
-              </td>
-              <td><span className={`status-badge ${pf.status}`}>{pf.status}</span></td>
-              <td>
-                <div className="action-btns">
-                  <button className="btn-edit" onClick={() => handleOpenModal(pf)}>수정</button>
-                </div>
-              </td>
-            </tr>
-          ))}
+          {performances.length > 0 ? (
+            performances.map(pf => (
+              <tr key={pf.performanceId}>
+                <td>{pf.performanceId}</td>
+                <td className="pf-title">{pf.title}</td>
+                <td>{pf.location}</td>
+                <td>
+                  <div className="schedule-tags">
+                    {pf.schedules?.map((sc, idx) => (
+                      <button key={idx} className="time-tag-btn" onClick={() => handleSeatManage(pf, sc)}>
+                        {sc.startTime?.substring(5, 10).replace("-", "/")} {sc.startTime?.substring(11, 16)}
+                      </button>
+                    ))}
+                  </div>
+                </td>
+                <td><span className={`status-badge ${pf.status}`}>{pf.status}</span></td>
+                <td>
+                  <div className="action-btns">
+                    <button className="btn-edit" onClick={() => handleOpenModal(pf)}>수정</button>
+                  </div>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr><td colSpan="6" style={{textAlign:'center', padding:'40px'}}>데이터가 없습니다.</td></tr>
+          )}
         </tbody>
       </table>
 
-      <div className="pagination">
-        <button 
-          onClick={() => handlePageChange(pageInfo.currentPage - 1)}
-          disabled={pageInfo.currentPage === 0}
-        >
-          이전
-        </button>
-        
-        {[...Array(pageInfo.totalPages)].map((_, i) => (
-          <button 
-            key={i} 
-            className={pageInfo.currentPage === i ? "active" : ""}
-            onClick={() => handlePageChange(i)}
-          >
-            {i + 1}
-          </button>
-        ))}
+      {renderPagination()}
 
-        <button 
-          onClick={() => handlePageChange(pageInfo.currentPage + 1)}
-          disabled={pageInfo.currentPage >= pageInfo.totalPages - 1}
-        >
-          다음
-        </button>
-      </div>
+      {isModalOpen && (
+        <AdminPerformanceModal 
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleSubmit}
+          formData={formData}
+          setFormData={setFormData}
+        />
+      )}
 
-      <AdminPerformanceModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleSubmit}
-        formData={formData}
-        setFormData={setFormData}
-      />
-
-      <AdminSeatModal 
-        isOpen={isSeatModalOpen}
-        onClose={() => setIsSeatModalOpen(false)}
-        scheduleId={selectedScheduleId}
-        performanceTitle={selectedTitle}
-        scheduleTime={selectedDateTime}
-      />
+      {isSeatModalOpen && (
+        <AdminSeatModal 
+          isOpen={isSeatModalOpen}
+          onClose={() => setIsSeatModalOpen(false)}
+          scheduleId={selectedScheduleId}
+          performanceTitle={selectedTitle}
+          scheduleTime={selectedDateTime}
+        />
+      )}
     </div>
   );
 }
