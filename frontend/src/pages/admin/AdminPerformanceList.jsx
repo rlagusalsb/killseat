@@ -30,11 +30,11 @@ export default function AdminPerformanceList() {
   const fetchPerformances = (page = 0) => {
     api.get(`/api/admin/performances?page=${page}`)
        .then(res => {
-         setPerformances(res.data.content); 
+         setPerformances(res.data.content || []); 
          setPageInfo({
-           currentPage: res.data.pageNumber, 
-           totalPages: res.data.totalPages,
-           totalElements: res.data.totalElements
+           currentPage: res.data.pageNumber || 0, 
+           totalPages: res.data.totalPages || 0,
+           totalElements: res.data.totalElements || 0
          });
        })
        .catch(err => console.error(err));
@@ -53,19 +53,33 @@ export default function AdminPerformanceList() {
     }
     setSelectedTitle(pf.title);
     setSelectedScheduleId(sc.scheduleId);
-    const datePart = sc.startTime.substring(5, 10).replace("-", "/");
-    const timePart = sc.startTime.substring(11, 16);
+    const datePart = sc.startTime ? sc.startTime.substring(5, 10).replace("-", "/") : "";
+    const timePart = sc.startTime ? sc.startTime.substring(11, 16) : "";
     setSelectedDateTime(`${datePart} ${timePart}`);
     setIsSeatModalOpen(true);
   };
 
   const handleOpenModal = (pf = null) => {
     if (pf) {
-      setFormData({ ...pf, schedules: pf.schedules || [] });
+      setFormData({
+        performanceId: pf.performanceId || "",
+        title: pf.title || "",
+        content: pf.content || "",
+        location: pf.location || "",
+        price: pf.price || 0,
+        thumbnailUrl: pf.thumbnailUrl || "",
+        status: pf.status || "BEFORE_OPEN",
+        schedules: pf.schedules || []
+      });
     } else {
       setFormData({
-        performanceId: "", title: "", content: "", location: "",
-        price: 0, thumbnailUrl: "", status: "BEFORE_OPEN",
+        performanceId: "", 
+        title: "", 
+        content: "", 
+        location: "",
+        price: 0, 
+        thumbnailUrl: "", 
+        status: "BEFORE_OPEN",
         schedules: [{ startTime: "", endTime: "" }]
       });
     }
@@ -87,6 +101,8 @@ export default function AdminPerformanceList() {
 
   const renderPagination = () => {
     const { currentPage, totalPages } = pageInfo;
+    if (totalPages <= 1) return null;
+
     const pageSize = 5;
     const currentGroup = Math.floor(currentPage / pageSize);
     const startPage = currentGroup * pageSize;
@@ -128,7 +144,7 @@ export default function AdminPerformanceList() {
     <div className="admin-list-container">
       <div className="list-header">
         <h3>공연 및 회차 관리 ({pageInfo.totalElements})</h3>
-        <button className="btn-create" onClick={() => handleOpenModal()}>공연 등록</button>
+        <button className="btn-create" onClick={() => handleOpenModal(null)}>공연 등록</button>
       </div>
 
       <table className="admin-table">
@@ -143,32 +159,36 @@ export default function AdminPerformanceList() {
           </tr>
         </thead>
         <tbody>
-          {performances.map(pf => (
-            <tr key={pf.performanceId}>
-              <td>{pf.performanceId}</td>
-              <td className="pf-title">{pf.title}</td>
-              <td>{pf.location}</td>
-              <td>
-                <div className="schedule-tags">
-                  {pf.schedules?.map((sc, idx) => (
-                    <button 
-                      key={idx} 
-                      className="time-tag-btn" 
-                      onClick={() => handleSeatManage(pf, sc)}
-                    >
-                      {sc.startTime?.substring(5, 10).replace("-", "/")} {sc.startTime?.substring(11, 16)}
-                    </button>
-                  ))}
-                </div>
-              </td>
-              <td><span className={`status-badge ${pf.status}`}>{pf.status}</span></td>
-              <td>
-                <div className="action-btns">
-                  <button className="btn-edit" onClick={() => handleOpenModal(pf)}>수정</button>
-                </div>
-              </td>
-            </tr>
-          ))}
+          {performances.length > 0 ? (
+            performances.map(pf => (
+              <tr key={pf.performanceId}>
+                <td>{pf.performanceId}</td>
+                <td className="pf-title">{pf.title}</td>
+                <td>{pf.location}</td>
+                <td>
+                  <div className="schedule-tags">
+                    {pf.schedules?.map((sc, idx) => (
+                      <button 
+                        key={idx} 
+                        className="time-tag-btn" 
+                        onClick={() => handleSeatManage(pf, sc)}
+                      >
+                        {sc.startTime?.substring(5, 10).replace("-", "/")} {sc.startTime?.substring(11, 16)}
+                      </button>
+                    ))}
+                  </div>
+                </td>
+                <td><span className={`status-badge ${pf.status}`}>{pf.status}</span></td>
+                <td>
+                  <div className="action-btns">
+                    <button className="btn-edit" onClick={() => handleOpenModal(pf)}>수정</button>
+                  </div>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr><td colSpan="6" style={{textAlign:'center', padding:'20px'}}>공연 데이터가 없습니다.</td></tr>
+          )}
         </tbody>
       </table>
 
