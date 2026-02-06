@@ -19,11 +19,15 @@ public class PerformanceController {
 
     @GetMapping
     public ResponseEntity<PageResponse<PerformanceResponseDto>> getActivePerformances(
+            @RequestParam(value = "title", required = false) String title,
             @PageableDefault(size = 20,
             sort = "createdAt",
             direction = Sort.Direction.DESC)Pageable pageable
     )
     {
+        if (title != null && !title.isBlank()) {
+            return ResponseEntity.ok(performanceService.searchActivePerformances(title, pageable));
+        }
         return ResponseEntity.ok(performanceService.getActivePerformances(pageable));
     }
 

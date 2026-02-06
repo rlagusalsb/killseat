@@ -7,6 +7,7 @@ export default function Performance() {
   const [performances, setPerformances] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [pageInfo, setPageInfo] = useState({
     pageNumber: 0,
     totalPages: 0,
@@ -16,12 +17,15 @@ export default function Performance() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchPerformances(pageInfo.pageNumber);
+    fetchPerformances(pageInfo.pageNumber, searchTerm);
   }, [pageInfo.pageNumber]);
 
-  const fetchPerformances = (page) => {
+  const fetchPerformances = (page, title = "") => {
     setLoading(true);
-    api.get("/api/performances", { params: { page, size: 20 } })
+    const params = { page, size: 20 };
+    if (title) params.title = title;
+
+    api.get("/api/performances", { params })
       .then((res) => {
         const { content, pageNumber, totalPages, totalElements } = res.data;
         setPerformances(content || []);
@@ -34,6 +38,12 @@ export default function Performance() {
       .finally(() => setLoading(false));
   };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setPageInfo(prev => ({ ...prev, pageNumber: 0 }));
+    fetchPerformances(0, searchTerm);
+  };
+
   const handlePageChange = (newPage) => {
     setPageInfo(prev => ({ ...prev, pageNumber: newPage }));
   };
@@ -43,7 +53,21 @@ export default function Performance() {
       <section className="page">
         <header className="page-header">
           <h1 className="page-title">공연 목록</h1>
-          {!loading && <span className="total-count">총 {pageInfo.totalElements}건</span>}
+          
+          <form onSubmit={handleSearch} className="search-form">
+            <input 
+              type="text" 
+              placeholder="공연 제목 검색"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+            <button type="submit" className="search-btn">검색</button>
+          </form>
+
+          <div className="search-result-info">
+            {!loading && <span className="total-count-text">총 {pageInfo.totalElements}건</span>}
+          </div>
         </header>
 
         {loading && <p className="helper-text">로딩 중...</p>}

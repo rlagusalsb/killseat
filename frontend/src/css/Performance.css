@@ -15,31 +15,79 @@
 }
 
 .page-header {
-  text-align: center;
-  margin-bottom: 50px;
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+  width: 100%;
 }
 
 .page-title {
   font-size: 2.8rem;
   font-weight: 800;
   color: #111;
-  margin: 0;
+  margin: 0 0 30px 0;
   letter-spacing: -1px;
+  white-space: nowrap;
+  width: 100%;
+  text-align: center;
 }
 
-.total-count {
-  display: block;
-  margin-top: 10px;
-  font-size: 0.95rem;
+.search-form {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  width: 100%;
+}
+
+.search-input {
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: 1px solid #e1e4e8;
+  width: 300px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  border-color: #ff4d4f;
+}
+
+.search-btn {
+  padding: 0 24px;
+  border-radius: 12px;
+  border: none;
+  background: #d60000;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.search-btn:hover {
+  background: #d60000;
+  transform: translateY(-1px);
+}
+
+.search-result-info {
+  margin-top: 40px;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.total-count-text {
+  font-size: 0.9rem;
   color: #868e96;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .performance-list {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  margin-top: 15px;
 }
 
 .performance-card {
@@ -147,8 +195,8 @@
 
 .page-btn:hover:not(:disabled) {
   background: #f8f9fa;
-  border-color: #ff4d4f;
-  color: #ff4d4f;
+  border-color: #d60000;
+  color: #d60000;
 }
 
 .page-btn:disabled {
@@ -173,10 +221,23 @@
 }
 
 .helper-text.error { 
-  color: #fa5252; 
+  color: #d60000; 
 }
 
 @media (max-width: 640px) {
+  .page-title {
+    font-size: 2rem;
+  }
+
+  .search-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-input {
+    width: 100%;
+  }
+
   .card-main { 
     flex-direction: column; 
     align-items: center;
@@ -204,5 +265,9 @@
 
   .pagination {
     gap: 12px;
+  }
+
+  .search-result-info {
+    justify-content: center;
   }
 }
