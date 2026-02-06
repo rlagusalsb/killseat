@@ -151,4 +151,15 @@ public class DbPerformanceService implements PerformanceService {
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PERFORMANCE_NOT_FOUND));
         performance.closeSales();
     }
+
+    //공연 검색
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<PerformanceResponseDto> searchActivePerformances(String title, Pageable pageable) {
+        Page<PerformanceResponseDto> page = performanceRepository
+                .findAllByStatusAndTitleContaining(PerformanceStatus.OPEN, title, pageable)
+                .map(performanceMapper::toDto);
+
+        return new PageResponse<>(page);
+    }
 }
