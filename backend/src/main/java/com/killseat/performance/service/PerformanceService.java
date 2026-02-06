@@ -14,4 +14,5 @@ public interface PerformanceService {
     PerformanceResponseDto updatePerformance(Long id, AdminPerformanceRequestDto request);
     void openPerformance(Long id);
     void closePerformance(Long id);
+    PageResponse<PerformanceResponseDto> searchActivePerformances(String title, Pageable pageable);
 }
