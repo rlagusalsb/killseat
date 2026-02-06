@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PerformanceRepository extends JpaRepository<Performance, Long> {
     Page<Performance> findAllByStatus(PerformanceStatus status, Pageable pageable);
+
+    Page<Performance> findAllByStatusAndTitleContaining(PerformanceStatus status, String title, Pageable pageable);
 }
