@@ -26,6 +26,8 @@ export default function Login() {
 
       navigate("/");
     } catch (err) {
+      const errorMessage = err.response?.data?.message || "아이디 또는 비밀번호가 일치하지 않습니다.";
+      alert(errorMessage);
       console.error(err.response?.data);
     } finally {
       setLoading(false);
