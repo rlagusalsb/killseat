@@ -1,5 +1,7 @@
 # KillSeat: 공연 예매 플랫폼
 
+> **현재 배포 중단 상태입니다.**
+
 * **배포 주소**: http://killseat.kro.kr
 * **API 문서**: http://killseat.kro.kr:8080/swagger-ui/index.html
 
