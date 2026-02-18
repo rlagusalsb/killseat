@@ -24,7 +24,8 @@ public class JwtUtil {
             @Value("${jwt.secret}") String secret,
             @Value("${jwt.access-expiration}") long accessTokenMs,
             @Value("${jwt.refresh-expiration}") long refreshTokenMs
-    ) {
+    )
+    {
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
         this.accessTokenMs = accessTokenMs;
         this.refreshTokenMs = refreshTokenMs;
@@ -63,14 +64,14 @@ public class JwtUtil {
                 .getSubject();
     }
 
-    public String extractRole(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .get("role", String.class);
-    }
+//    public String extractRole(String token) {
+//        return Jwts.parserBuilder()
+//                .setSigningKey(key)
+//                .build()
+//                .parseClaimsJws(token)
+//                .getBody()
+//                .get("role", String.class);
+//    }
 
     public boolean validateToken(String token) {
         try {
