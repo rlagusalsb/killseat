@@ -50,9 +50,13 @@ public class Performance {
     private LocalDateTime createdAt;
 
     @Builder
-    private Performance(String title, String content, String location, Long price,
-                        PerformanceStatus status, String thumbnailUrl,
-                        List<PerformanceSchedule> schedules) {
+    private Performance(
+            String title, String content, String location, Long price,
+            PerformanceStatus status, String thumbnailUrl,
+            List<PerformanceSchedule> schedules
+
+    )
+    {
         this.title = title;
         this.content = content;
         this.location = location;
@@ -67,24 +71,24 @@ public class Performance {
 
     public void addSchedule(PerformanceSchedule schedule) {
         this.schedules.add(schedule);
+
         if (schedule.getPerformance() != this) {
-            schedule.setPerformance(this);
+            schedule.assignPerformance(this);
         }
     }
 
-    public void update(String title, String content, String location, Long price,
-                       PerformanceStatus status, String thumbnailUrl,
-                       List<PerformanceSchedule> newSchedules) {
+    public void update(
+            String title, String content, String location, Long price,
+            PerformanceStatus status, String thumbnailUrl,
+            List<PerformanceSchedule> newSchedules
+    )
+    {
         this.title = title;
         this.content = content;
         this.location = location;
         this.price = price;
         this.status = status;
         this.thumbnailUrl = thumbnailUrl;
-    }
-
-    public void updateStatus(PerformanceStatus status) {
-        this.status = status;
     }
 
     public void openSales() {
@@ -95,6 +99,7 @@ public class Performance {
         if (this.status != PerformanceStatus.BEFORE_OPEN) {
             throw new CustomException(CustomErrorCode.INVALID_PERFORMANCE_STATUS);
         }
+
         this.status = PerformanceStatus.OPEN;
     }
 
@@ -102,6 +107,7 @@ public class Performance {
         if (this.status != PerformanceStatus.OPEN) {
             throw new CustomException(CustomErrorCode.INVALID_PERFORMANCE_STATUS);
         }
+
         this.status = PerformanceStatus.CLOSED;
     }
 }

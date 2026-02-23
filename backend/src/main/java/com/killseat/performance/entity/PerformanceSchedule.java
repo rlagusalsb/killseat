@@ -34,7 +34,7 @@ public class PerformanceSchedule {
         this.performance = performance;
     }
 
-    public void setPerformance(Performance performance) {
+    public void assignPerformance(Performance performance) {
         this.performance = performance;
     }
 
