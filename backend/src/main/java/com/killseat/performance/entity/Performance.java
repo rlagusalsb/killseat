@@ -73,7 +73,7 @@ public class Performance {
         this.schedules.add(schedule);
 
         if (schedule.getPerformance() != this) {
-            schedule.setPerformance(this);
+            schedule.assignPerformance(this);
         }
     }
 
