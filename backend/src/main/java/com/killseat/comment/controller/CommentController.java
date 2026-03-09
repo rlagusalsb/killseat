@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @RestController
@@ -49,7 +48,8 @@ public class CommentController {
             @PathVariable Long commentId,
             @RequestBody CommentUpdateRequestDto request,
             @AuthenticationPrincipal CustomUserDetails user
-    ) throws AccessDeniedException {
+    )
+    {
         CommentResponseDto response =
                 commentService.updateComment(commentId, user.getMemberId(), request);
         return ResponseEntity.ok(response);
@@ -59,7 +59,8 @@ public class CommentController {
     public ResponseEntity<Void> deleteComment(
             @PathVariable Long commentId,
             @AuthenticationPrincipal CustomUserDetails user
-    ) throws AccessDeniedException {
+    )
+    {
         commentService.deleteComment(commentId, user.getMemberId());
         return ResponseEntity.noContent().build();
     }
