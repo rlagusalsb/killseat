@@ -60,9 +60,4 @@ public class Comment {
     public void update(String content) {
         this.content = content;
     }
-
-    public void addChild(Comment child) {
-        children.add(child);
-        child.parent = this;
-    }
 }
