@@ -38,8 +38,10 @@ public class SeatController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<SeatResponseDto> update(@PathVariable Long id,
-                                                  @RequestBody SeatRequestDto request)
+    public ResponseEntity<SeatResponseDto> update(
+            @PathVariable Long id,
+            @RequestBody SeatRequestDto request
+    )
     {
         SeatResponseDto response = seatService.updateSeat(id, request);
         return ResponseEntity.ok(response);
