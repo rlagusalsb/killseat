@@ -55,7 +55,7 @@ public class CommentService {
 
         Comment parent = null;
 
-        if ((request.getParentId() != null)) {
+        if (request.getParentId() != null) {
             parent = commentRepository.findById(request.getParentId())
                     .orElseThrow(() -> new CustomException(CustomErrorCode.PARENT_COMMENT_NOT_FOUND));
 
@@ -76,9 +76,7 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentResponseDto updateComment(
-            Long commentId, Long memberId, CommentUpdateRequestDto request
-    ) throws AccessDeniedException {
+    public CommentResponseDto updateComment(Long commentId, Long memberId, CommentUpdateRequestDto request) {
         validateCommentId(commentId);
         validateMemberId(memberId);
         validateUpdateReq(request);
@@ -95,7 +93,7 @@ public class CommentService {
     }
 
     @Transactional
-    public void deleteComment(Long commentId, Long memberId) throws AccessDeniedException {
+    public void deleteComment(Long commentId, Long memberId) {
         validateCommentId(commentId);
         validateMemberId(memberId);
 
