@@ -50,37 +50,17 @@ public class Reservation {
     private LocalDateTime updatedAt;
 
     @Builder
-    private Reservation(Member member,
-                        PerformanceSeat performanceSeat,
-                        ReservationStatus status,
-                        LocalDateTime expiresAt
+    private Reservation(
+            Member member,
+            PerformanceSeat performanceSeat,
+            ReservationStatus status,
+            LocalDateTime expiresAt
     )
     {
         this.member = member;
         this.performanceSeat = performanceSeat;
         this.status = (status != null) ? status : ReservationStatus.PENDING;
         this.expiresAt = expiresAt;
-    }
-
-    public void addPayment(Payment payment) {
-        this.payments.add(payment);
-        if (payment.getReservation() != this) {
-            payment.linkReservation(this);
-        }
-    }
-
-    //상태 변경 메서드
-    //결제 성공
-    public void confirm() {
-        if (this.status != ReservationStatus.PENDING) {
-            throw new IllegalStateException("예약을 확정할 수 없는 상태입니다.");
-        }
-        this.status = ReservationStatus.CONFIRMED;
-    }
-
-    //결제 실패
-    public void payFailed() {
-        cancelBeforePayment();
     }
 
     //결제 전 예약 취소
