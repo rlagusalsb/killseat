@@ -42,22 +42,6 @@ public class PerformanceSeatService {
         });
     }
 
-    //관리자 전용 특정 좌석 차단
-    @Transactional
-    public void blockSeat(Long id) {
-        PerformanceSeat seat = performanceSeatRepository.findByIdWithLock(id)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.SEAT_NOT_FOUND));
-        seat.block();
-    }
-
-    //관리자 전용 차단된 좌석 해제
-    @Transactional
-    public void unblockSeat(Long id) {
-        PerformanceSeat seat = performanceSeatRepository.findByIdWithLock(id)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.SEAT_NOT_FOUND));
-        seat.unblock();
-    }
-
     //좌석 선점
     @Transactional
     public void holdSeat(Long id) {
@@ -67,36 +51,29 @@ public class PerformanceSeatService {
         seat.hold();
     }
 
-    //결제 완료 후 자리 확정
-    @Transactional
-    public void confirmSeat(Long id) {
-        PerformanceSeat seat = performanceSeatRepository.findByIdWithLock(id)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.SEAT_NOT_FOUND));
-
-        seat.confirm();
-    }
-
-    //선점 해제
-    @Transactional
-    public void releaseSeat(Long id) {
-        PerformanceSeat seat = performanceSeatRepository.findByIdWithLock(id)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.SEAT_NOT_FOUND));
-        seat.releaseHold();
-    }
-
-    //예약 취소
-    @Transactional
-    public void cancelSeat(Long id) {
-        PerformanceSeat seat = performanceSeatRepository.findByIdWithLock(id)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.SEAT_NOT_FOUND));
-        seat.cancel();
-    }
-
     //특정 공연 좌석 목록 조회
     @Transactional(readOnly = true)
     public List<PerformanceSeatResponseDto> getSeatsByPerformance(Long scheduleId) {
         return performanceSeatRepository.findAllWithSeatByPerformanceScheduleId(scheduleId).stream()
                 .map(performanceSeatMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    //관리자 전용 특정 좌석 차단
+    @Transactional
+    public void blockSeat(Long id) {
+        PerformanceSeat seat = performanceSeatRepository.findByIdWithLock(id)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.SEAT_NOT_FOUND));
+
+        seat.block();
+    }
+
+    //관리자 전용 차단된 좌석 해제
+    @Transactional
+    public void unblockSeat(Long id) {
+        PerformanceSeat seat = performanceSeatRepository.findByIdWithLock(id)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.SEAT_NOT_FOUND));
+
+        seat.unblock();
     }
 }
