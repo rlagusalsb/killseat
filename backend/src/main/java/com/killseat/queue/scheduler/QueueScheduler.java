@@ -39,23 +39,26 @@ public class QueueScheduler {
 
                 if (entryUsers != null && !entryUsers.isEmpty()) {
                     for (String userIdStr : entryUsers) {
-                        //추출된 인원을 Redis 대기열에서 즉시 삭제
+                        //추출된 인원을 대기열에서 삭제
                         redisTemplate.opsForZSet().remove(waitingKey, userIdStr);
 
                         try {
                             String cleanUserId = userIdStr.replace("\"", "").replaceAll("[^0-9]", "");
-                            if (cleanUserId.isEmpty()) continue;
+                            if (cleanUserId.isEmpty()) {
+                                continue;
+                            }
+
                             Long userId = Long.parseLong(cleanUserId);
 
                             //해당 유저에게 'PROCEED' 권한 부여 (5분간 유효)
                             redisTemplate.opsForValue().set(ACTIVE_KEY_PREFIX + userId, "PROCEED", Duration.ofMinutes(5));
 
-                            //입장 신호 전송
+                            //입장 신호(ENTER) 전송
                             queueNotificationService.sendToUser(performanceId, scheduleId, userId, "proceed", "ENTER");
 
-                            log.info("[Queue] User {} entered. Performance: {}, Schedule: {}", userId, performanceId, scheduleId);
+                            log.info("[대기열] 유저 {} 입장함. (공연: {}, 회차: {})", userId, performanceId, scheduleId);
                         } catch (Exception e) {
-                            log.error("[Queue] Failed to process user entry: {}", userIdStr);
+                            log.error("[대기열] 사용자 입장 처리 중 오류 발생: {}", userIdStr);
                         }
                     }
                 }
@@ -69,7 +72,11 @@ public class QueueScheduler {
                     for (String uidStr : remainingUsers) {
                         try {
                             String cleanUid = uidStr.replace("\"", "").replaceAll("[^0-9]", "");
-                            if (cleanUid.isEmpty()) { rank++; continue; }
+                            if (cleanUid.isEmpty()) {
+                                rank++;
+                                continue;
+                            }
+
                             Long userId = Long.parseLong(cleanUid);
 
                             //현재 접속 중인 유저에게만 순번 전송
