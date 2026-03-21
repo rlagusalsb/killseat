@@ -94,9 +94,14 @@ public class PaymentService {
         Reservation reservation = payment.getReservation();
         Long seatId = reservation.getPerformanceSeat().getPerformanceSeatId();
 
-        if (payment.getStatus() == PaymentStatus.SUCCESS || reservation.getStatus() == ReservationStatus.CONFIRMED) {
-            return new PaymentConfirmResponseDto(true, payment.getPaymentId(),
-                    PaymentStatus.SUCCESS.name(), ReservationStatus.CONFIRMED.name(), "이미 처리된 결제입니다.");
+        if (payment.getStatus() == PaymentStatus.SUCCESS ||
+                reservation.getStatus() == ReservationStatus.CONFIRMED) {
+            return new PaymentConfirmResponseDto(
+                    true,
+                    payment.getPaymentId(),
+                    PaymentStatus.SUCCESS.name(),
+                    ReservationStatus.CONFIRMED.name(),
+                    "이미 처리된 결제입니다.");
         }
 
         PortOnePaymentInfo info = portOneClient.getPaymentInfo(request.getImpUid());
