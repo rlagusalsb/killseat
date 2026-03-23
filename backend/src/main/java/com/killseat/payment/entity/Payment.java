@@ -55,10 +55,6 @@ public class Payment {
         this.method = method;
     }
 
-    public void linkReservation(Reservation reservation) {
-        this.reservation = reservation;
-    }
-
     public void assignMerchantUid(String merchantUid) {
         if (this.merchantUid != null) {
             throw new IllegalStateException("이미 merchantUid가 설정됐습니다.");
@@ -71,34 +67,5 @@ public class Payment {
             throw new IllegalStateException("이미 impUid가 설정됐습니다.");
         }
         this.impUid = impUid;
-    }
-
-    //결제 성공 시
-    public void success() {
-        if (this.status != PaymentStatus.PENDING) {
-            throw new IllegalStateException("결제 가능 상태가 아닙니다.");
-        }
-        this.status = PaymentStatus.SUCCESS;
-    }
-
-    //결제 실패 시
-    public void fail() {
-        if (this.status != PaymentStatus.PENDING) {
-            throw new IllegalStateException("결제 가능 상태가 아닙니다.");
-        }
-        this.status = PaymentStatus.FAILED;
-    }
-
-    //결제 취소 시
-    public void cancel() {
-        if (this.status == PaymentStatus.CANCELED) {
-            return;
-        }
-
-        if (this.status != PaymentStatus.SUCCESS) {
-            throw new IllegalStateException("결제 완료 건만 취소 가능합니다.");
-        }
-
-        this.status = PaymentStatus.CANCELED;
     }
 }
