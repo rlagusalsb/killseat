@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "performance_seat",
         uniqueConstraints = {
             @UniqueConstraint(
-                    name = "uk+performance_schedule_seat",
+                    name = "uk_performance_schedule_seat",
                     columnNames = {"performance_schedule_id", "seat_id"})
         })
 @Getter
@@ -72,7 +72,7 @@ public class PerformanceSeat {
 
     public void cancel() {
         if (this.status != PerformanceSeatStatus.RESERVED) {
-            throw new IllegalStateException("예약되지 않은 좌석만 취소할 수 있습니다.");
+            throw new IllegalStateException("예약된 좌석만 취소할 수 있습니다.");
         }
         this.status = PerformanceSeatStatus.AVAILABLE;
     }
